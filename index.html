@@ -339,7 +339,7 @@
             <code>
               MAPPINGS
             </code>
-            at the top of the script. Capacity is a stored, unmapped hook.
+            at the top of the script. Capacity controls gradient band count; years control serif height and grid spacing.
             <br/>
             <b>
               Name rules:
@@ -360,7 +360,8 @@
     <script>
     /* ================= CONFIG (edit me) ================= */
     const VENUE_TYPES = [
-      ['Club', 1],
+      ['Club', 1, 'club'],
+      ['Night club', 1, 'nightClub'],
       ['Theater', 0],
       ['Bar', 0],
       ['Dive', 0],
@@ -370,7 +371,7 @@
       ['Café', 0],
       ['Cellar', 0],
       ['Outdoor', 0]
-    ]; // [name, implemented]
+    ]; // [name, implemented, grid key]
     const GENRES = [
       ['Rock', '#e8332a'],
       ['Punk', '#ff1fd0'],
@@ -403,7 +404,8 @@
       yearsOpen: 'serif height + footer opening year',
       capacity: 'gradient band count (1-5, log scale)'
     };
-    /* Grids are data. Slot order: name top, name left, name right, addr left, addr top, addr right. rot: 0 | -90 (CCW) | 90 (CW) */
+    /* Word indices: name 0–2, address 3–5. Grids may reorder or combine words.
+       rot: 0 | -90 (CCW) | 90 (CW). Dimensions grow with the variable slabs. */
     const GRIDS = {
       club: {
         frame: {
@@ -453,8 +455,30 @@
             rot: 90
           }]
         }
+      },
+      nightClub: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        // Outer address band wraps the inner three-sided venue name.
+        wordOrder: [1, 0, 2, 3, [4, 5]],
+        naturalLength: true,
+        slots: g => {
+          const A = 100 * g,
+            N = Math.min(200 * g, (1020 - A - 40) / 2),
+            innerX = 90 + A,
+            innerY = 75 + A,
+            innerWidth = 1020 - A,
+            sideY = innerY + N;
+          return [
+            {x: innerX, y: innerY, w: innerWidth, h: N, rot: 0},
+            {x: innerX, y: sideY, w: N, h: 1400 - A - N, rot: -90},
+            {x: 1110 - N, y: sideY, w: N, h: 1400 - A - N, rot: 90},
+            {x: 90, y: 75 + A, w: A, h: 1400 - A, rot: -90},
+            {x: 90, y: 75, w: 1020, h: A, rot: 0}
+          ];
+        }
       }
     };
+    const activeGrid = () => GRIDS[VENUE_TYPES[S.type]?.[2]] || GRIDS.club;
     const RAND = [
       ["Bottom of the Hill", "1233 17th St", "Potrero Hill"],
       ["Great Northern", "119 Utah St", "Potrero"],
@@ -555,6 +579,17 @@
     const slabGrowth = () => S.slab + yearSlabGrowth();
     const typeGrowth = () => (700 + 2 * slabGrowth()) / 700;
     let typeClipId = 0;
+    // Fit the cross-axis to the band; natural-length grids only condense on overflow.
+    function textFit(slot, x0, x1, y0, y1) {
+      const length = slot.rot ? slot.h : slot.w,
+        thickness = slot.rot ? slot.w : slot.h,
+        width = x1 - x0 || 1,
+        sx = slot.naturalLength ? Math.min(1, length / width) : length / width,
+        sy = thickness / (y1 - y0 || 1),
+        // CCW words finish at the upper corner and extend downward as they grow.
+        offset = slot.naturalLength && slot.rot < 0 ? length - width * sx : 0;
+      return `translate(${offset} 0) scale(${sx} ${sy}) translate(${-x0} ${-y0})`;
+    }
     // returns array of fn(extraAttrs)->svg markup (one per glyph)
     // Fit text into a grid slot. Loaded fonts produce glyph paths; the fallback uses SVG text.
     function setText(s, text) {
@@ -587,7 +622,7 @@
           x1 = Math.max(...ink.map(g => g.x + (g.m.actualBoundingBoxRight ?? g.m.width))),
           y0 = stretchY(-Math.max(...ink.map(g => g.m.actualBoundingBoxAscent || cap))),
           y1 = stretchY(Math.max(...ink.map(g => g.m.actualBoundingBoxDescent || 0))),
-          fit = `scale(${L / (x1 - x0 || 1)} ${T / (y1 - y0 || 1)}) translate(${-x0} ${-y0})`;
+          fit = textFit(s, x0, x1, y0, y1);
         return glyphs.map(({c, x}) => ex => {
           const id = `serif-${typeClipId++}`;
           return `<g transform="${tf} ${fit}"><defs>
@@ -629,7 +664,7 @@
         x1 = Math.max(...boxes.map(b => b.x2)),
         y0 = Math.min(...boxes.map(b => b.y1)),
         y1 = Math.max(...boxes.map(b => b.y2)),
-        fit = `scale(${L / (x1 - x0 || 1)} ${T / (y1 - y0 || 1)}) translate(${-x0} ${-y0})`;
+        fit = textFit(s, x0, x1, y0, y1);
       return paths.map(path => ex =>
         `<path ${ex} transform="${tf} ${fit}" d="${path.toPathData(3)}"/>`);
     }
@@ -638,7 +673,7 @@
       const y = CFG.footerY,
         sz = CFG.footerSize,
         k = CFG.ink;
-      const frame = GRIDS.club.frame,
+      const frame = activeGrid().frame,
         inset = 24;
       return [
         [S.hood.toUpperCase(), frame.x + inset, y, 'start'],
@@ -703,7 +738,7 @@
     // Compose the postcard from gradients, grain, clipping masks, outlined lettering, and footer.
     function build() {
       typeClipId = 0;
-      const G = GRIDS.club,
+      const G = activeGrid(),
         f = G.frame,
         k = CFG.ink,
         sw = CFG.stroke;
@@ -715,7 +750,12 @@
       if (S.swap)[nm[0], nm[1]] = [nm[1], nm[0]]; // swap name words 1 & 2
       const words = [...nm, ad[0] || '', ad[1] || '', ad[2] || ''];
       const SL = G.slots(typeGrowth()),
-        items = SL.flatMap((s, i) => setText(s, words[i]));
+        order = G.wordOrder || [0, 1, 2, 3, 4, 5],
+        items = SL.flatMap((slot, i) => {
+          const indices = Array.isArray(order[i]) ? order[i] : [order[i]],
+            text = indices.map(index => words[index]).filter(Boolean).join(' ');
+          return setText({...slot, naturalLength: G.naturalLength}, text);
+        });
       const cols = (S.genres.length ? S.genres : [1]).map(i => GENRES[i][1]),
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
