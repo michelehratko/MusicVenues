@@ -96,6 +96,8 @@
               <option value="stripes">Original bands</option>
               <option value="clouds">Color clouds</option>
               <option value="warped">Warped bands</option>
+              <option value="screenprint">Flat screenprint</option>
+              <option value="hybrid">Linear background + solid type</option>
             </select>
           </label>
           <label for="pack">Name Line Packing
@@ -125,7 +127,7 @@
             </div>
             <p id="locationStatus" class="hint" role="status"></p>
             <p class="hint">Coordinates come from your neighborhood spreadsheet. Choose a suggested neighborhood; all venues in that neighborhood share its color anchor.</p>
-            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. Higher capacity adds turbulent folds, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Genre colors and seed offset also affect similarity.</p>
+            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. All capacities have strong distortion and rough print edges. Higher capacity adds fragmentation, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Flat screenprint: first genre colors the name and frame, second colors the background, third colors the address. With one genre, the background is white; with two, the address matches the name. Linear background + solid type keeps these solid foreground colors and applies capacity-driven linear bands to the background. Genre colors and seed offset also affect similarity.</p>
           </div>
           <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
         <label class="check">
@@ -478,7 +480,7 @@
       genres: [3],
       seed: 0,
       grain: 60,
-      colorStyle: "warped",
+      colorStyle: "screenprint",
       latitude: null,
       longitude: null,
       guides: false,
@@ -909,7 +911,7 @@
     // Separate placement from capacity: increasing density preserves existing cloud centers.
     let colorPlacement = [];
     function colorField(id, colors, stops, y1, y2, variant) {
-      if (S.colorStyle === 'stripes') return grad(id, y1, y2, stops);
+      if (S.colorStyle === 'stripes' || S.colorStyle === 'hybrid') return grad(id, y1, y2, stops);
       const point = projectVenue();
       // Shared randomness across the city; coordinates move the same field continuously.
       const seed = 48271 + S.seed;
@@ -918,8 +920,8 @@
       if (S.colorStyle === 'warped') {
         // A concentrated source feeds a distorted plume. Capacity changes the flow,
         // secondary pigment pockets and their contrast, with only modest repetition.
-        const energy = density * density;
-        const chaos = 180 + 850 * energy;
+        const energy = .3 + .7 * Math.pow(density, 1.35);
+        const chaos = 650 + 650 * Math.pow(density, 1.2);
         const radius = 720 + density * 360;
         const palette = [...colors, tint(colors[0], .72)];
         const stops = [[colors[0], 0], [colors[0], .09]];
@@ -950,16 +952,21 @@
             `<stop stop-color="${color}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/>`);
           pockets += `<rect width="1200" height="1800" fill="url(#${id}-pocket-${i})" opacity="${energy*(.25+random()*.65)}"/>`;
         }
-        const flowX = .0009+point.x/1200*.0005+energy*.0007;
-        const flowY = .0011+point.y/1800*.0005+energy*.001;
-        if (variant === 0) colorPlacement.push(`<text x="40" y="1740" fill="#00dfff" font-size="25">Neighborhood source · flow ${Math.round(chaos)} · pigment variation ${Math.round(energy*100)}%</text>`);
+        const flowX = .0013+point.x/1200*.0005+density*.0006;
+        const flowY = .0021+point.y/1800*.0005+density*.001;
+        if (variant === 0) colorPlacement.push(`<text x="40" y="1740" fill="#00dfff" font-size="25">Neighborhood source · distortion ${Math.round(chaos)} · pigment variation ${Math.round(energy*100)}%</text>`);
         return defs +
           `<mask id="${id}-plume" maskUnits="userSpaceOnUse" x="-600" y="-600" width="2400" height="3000"><rect x="-600" y="-600" width="2400" height="3000" fill="url(#${id}-fade)"/></mask>
           <filter id="${id}-warp" filterUnits="userSpaceOnUse" x="-600" y="-600" width="2400" height="3000" color-interpolation-filters="sRGB">
-            <feTurbulence type="fractalNoise" baseFrequency="${flowX} ${flowY}" numOctaves="2" seed="${Math.abs(seed % 1000)}" result="flow"/>
+            <feTurbulence type="fractalNoise" baseFrequency="${flowX} ${flowY}" numOctaves="3" seed="${Math.abs(seed % 1000)}" result="flow"/>
             <feDisplacementMap in="SourceGraphic" in2="flow" scale="${chaos}" xChannelSelector="R" yChannelSelector="G" result="folded"/>
-            <feTurbulence type="fractalNoise" baseFrequency=".004 .003" numOctaves="3" seed="${Math.abs((seed+31)%1000)}" result="eddies"/>
-            <feDisplacementMap in="folded" in2="eddies" scale="${25+energy*290}" xChannelSelector="G" yChannelSelector="R"/>
+            <feTurbulence type="fractalNoise" baseFrequency=".009 .015" numOctaves="3" seed="${Math.abs((seed+31)%1000)}" result="roughness"/>
+            <!-- Stepped displacement breaks smooth contours into rough print-like edges. -->
+            <feComponentTransfer in="roughness" result="torn">
+              <feFuncR type="discrete" tableValues=".1 .25 .4 .5 .6 .75 .9"/>
+              <feFuncG type="discrete" tableValues=".1 .25 .4 .5 .6 .75 .9"/>
+            </feComponentTransfer>
+            <feDisplacementMap in="folded" in2="torn" scale="${85+density*220}" xChannelSelector="G" yChannelSelector="R"/>
           </filter>
           <pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="${tint(colors[0], .92)}"/><g filter="url(#${id}-warp)"><g mask="url(#${id}-plume)"><rect x="-600" y="-600" width="2400" height="3000" fill="url(#${id}-ink)"/>${pockets}</g></g><rect width="1200" height="1800" fill="url(#${id}-core)"/></pattern>`;
       }
@@ -1049,8 +1056,11 @@
           const indices = Array.isArray(order[i]) ? order[i] : [order[i]],
             text = slot.fullName ? S.name.trim().toUpperCase() :
               indices.map(index => words[index]).filter(Boolean).join(' ');
-          return slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
+          const renderers = slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
             setText({naturalLength: G.naturalLength, ...slot}, text);
+          return renderers.map(render => Object.assign(render, {
+            addressInk: !slot.fullName && indices.every(index => index >= (G.nameSlots || 3))
+          }));
         });
       const cols = (S.genres.length ? S.genres : [3]).map(i => GENRES[i][1]),
         n = cols.length,
@@ -1081,7 +1091,7 @@
         borderShape = `<path fill-rule="evenodd" d="M ${kl} ${kl} H ${1200-kl} V ${1800-kl} H ${kl} Z M ${f.x} ${f.y} H ${f.x+f.w} V ${f.y+f.h} H ${f.x} Z"/>`,
         guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in" style="isolation:isolate"><defs>
-    ${colorField('A',cols,A,kl,1800-kl,0)}${colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
+    ${S.colorStyle === 'screenprint' ? '' : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
     <clipPath id="cd"><rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}"/></clipPath>
     <clipPath id="fr"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></clipPath>
@@ -1099,10 +1109,17 @@
     <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <rect width="1200" height="1800" fill="#fff"/>
-    <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
-    <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
-    <use href="#artwork-shape" filter="url(#type-outline)"/>
-    <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
+    ${S.colorStyle === 'screenprint' || S.colorStyle === 'hybrid' ? `
+      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${S.colorStyle === 'hybrid' ? 'url(#B)' : cols[1] || '#fff'}"/>
+      <use href="#artwork-shape" filter="url(#type-outline)"/>
+      <g mask="url(#lt)"><rect width="1200" height="1800" fill="${cols[0]}"/></g>
+      ${items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('')}
+    ` : `
+      <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
+      <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
+      <use href="#artwork-shape" filter="url(#type-outline)"/>
+      <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
+    `}
     ${footer()}
     ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.7" style="mix-blend-mode:screen"/>` : ''}
     ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}</svg>`;
