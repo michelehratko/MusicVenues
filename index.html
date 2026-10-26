@@ -82,13 +82,22 @@
           <h1>Postcard Generator</h1>
           <label for="name">Venue Name<input id="name" type="text"/></label>
           <label for="addr">Venue Address<input id="addr" type="text"/></label>
-          <label for="hood">Neighborhood<input id="hood" type="text"/></label>
+          <label for="hood">Neighborhood<input id="hood" type="text" list="neighborhoodOptions"/><datalist id="neighborhoodOptions"></datalist></label>
           <div class="paired">
             <label for="opened">Year Opened<input id="opened" type="number" inputmode="numeric"/></label>
             <label for="cn2">Capacity<input id="cn2" max="40000" min="30" type="number" inputmode="numeric"/></label>
           </div>
           <fieldset><legend>Venue Type</legend><div class="chips" id="type" role="group" aria-label="Venue type"></div></fieldset>
           <fieldset><legend>Genres <span class="hint">(pick 1–3)</span></legend><div class="chips" id="gen" role="group" aria-label="Genres"></div></fieldset>
+          <label class="check"><input id="colorGrid" type="checkbox"/>Show grid, composition &amp; color placement</label>
+          <div id="compositionRules" class="hint" hidden></div>
+          <label for="colorStyle">Color style
+            <select id="colorStyle">
+              <option value="stripes">Original bands</option>
+              <option value="clouds">Color clouds</option>
+              <option value="warped">Warped bands</option>
+            </select>
+          </label>
           <label for="pack">Name Line Packing
             <select id="pack">
               <option value="0">Spread out (one word per slot)</option>
@@ -109,6 +118,15 @@
         <div class="advanced-grid">
           <div class="wide"><label>Presets</label><div class="chips" id="pre"></div></div>
           <label>Years Open<span class="row"><input id="yr" aria-label="Years open slider" max="200" min="1" type="range"/><input id="yn" aria-label="Years open" max="200" min="1" type="number"/></span></label>
+          <div>
+            <div class="paired">
+              <label>Latitude<input id="latitude" readonly type="number" min="-90" max="90" step="any" placeholder="e.g. 37.78"/></label>
+              <label>Longitude<input id="longitude" readonly type="number" min="-180" max="180" step="any" placeholder="e.g. -122.41"/></label>
+            </div>
+            <p id="locationStatus" class="hint" role="status"></p>
+            <p class="hint">Coordinates come from your neighborhood spreadsheet. Choose a suggested neighborhood; all venues in that neighborhood share its color anchor.</p>
+            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. Higher capacity adds turbulent folds, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Genre colors and seed offset also affect similarity.</p>
+          </div>
           <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
         <label class="check">
           <input id="swap" type="checkbox"/>
@@ -460,6 +478,9 @@
       genres: [3],
       seed: 0,
       grain: 60,
+      colorStyle: "warped",
+      latitude: null,
+      longitude: null,
       guides: false,
       pack: 1,
       swap: false,
@@ -874,8 +895,140 @@
     }; // lighter tint of a genre color
     const grad = (id, y1, y2, l) =>
       `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="${y1}" y2="${y2}">${l.map(([c,o])=>`<stop offset="${o.toFixed(3)}" stop-color="${c}"/>`).join('')}</linearGradient>`;
+    // Design extent for mainland San Francisco; north is up and east is right.
+    // This is a normalized city diagram, not a distance-preserving map.
+    const SF_EXTENT = {west: -122.52, east: -122.35, south: 37.70, north: 37.83};
+    function projectVenue() {
+      const located = Number.isFinite(S.latitude) && Number.isFinite(S.longitude);
+      const lat = located ? S.latitude : (SF_EXTENT.north + SF_EXTENT.south) / 2;
+      const lon = located ? S.longitude : (SF_EXTENT.west + SF_EXTENT.east) / 2;
+      return {x: (lon - SF_EXTENT.west) / (SF_EXTENT.east - SF_EXTENT.west) * 1200,
+        y: (SF_EXTENT.north - lat) / (SF_EXTENT.north - SF_EXTENT.south) * 1800,
+        lat, lon, located};
+    }
+    // Separate placement from capacity: increasing density preserves existing cloud centers.
+    let colorPlacement = [];
+    function colorField(id, colors, stops, y1, y2, variant) {
+      if (S.colorStyle === 'stripes') return grad(id, y1, y2, stops);
+      const point = projectVenue();
+      // Shared randomness across the city; coordinates move the same field continuously.
+      const seed = 48271 + S.seed;
+      const random = prng(seed + variant * 7919);
+      const density = Math.max(0, Math.min(1, tFromCap(S.cap) / 1000));
+      if (S.colorStyle === 'warped') {
+        // A concentrated source feeds a distorted plume. Capacity changes the flow,
+        // secondary pigment pockets and their contrast, with only modest repetition.
+        const energy = density * density;
+        const chaos = 180 + 850 * energy;
+        const radius = 720 + density * 360;
+        const palette = [...colors, tint(colors[0], .72)];
+        const stops = [[colors[0], 0], [colors[0], .09]];
+        const count = 4 + Math.round(density * 3);
+        const weights = Array.from({length: count}, () => .4 + random() * 1.5);
+        const total = weights.reduce((a,b) => a+b, 0);
+        let offset = .09;
+        weights.forEach((weight, i) => {
+          offset += weight / total * .91;
+          stops.push([palette[(i+1) % palette.length], Math.min(1, offset)]);
+        });
+        const radial = (name, x, y, r, content) =>
+          `<radialGradient id="${name}" gradientUnits="userSpaceOnUse" cx="${x}" cy="${y}" r="${r}">${content}</radialGradient>`;
+        let defs = radial(id+'-ink', point.x, point.y, radius,
+          stops.map(([c,o])=>`<stop offset="${o}" stop-color="${c}"/>`).join(''));
+        defs += radial(id+'-fade', point.x, point.y, radius*1.25,
+          '<stop stop-color="white"/><stop offset=".3" stop-color="white"/><stop offset="1" stop-color="white" stop-opacity="0"/>');
+        defs += radial(id+'-core', point.x, point.y, 160 + density*90,
+          `<stop stop-color="${colors[0]}" stop-opacity=".9"/><stop offset="1" stop-color="${colors[0]}" stop-opacity="0"/>`);
+        let pockets = '';
+        // Fixed pocket directions keep capacity changes deterministic and gradual.
+        for (let i = 0; i < 7; i++) {
+          const angle = random()*Math.PI*2, distance = 120+random()*600;
+          const x = point.x+Math.cos(angle)*distance, y = point.y+Math.sin(angle)*distance;
+          const r = 100+random()*260;
+          const color = colors[(i+1)%colors.length];
+          defs += radial(id+'-pocket-'+i, x, y, r,
+            `<stop stop-color="${color}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/>`);
+          pockets += `<rect width="1200" height="1800" fill="url(#${id}-pocket-${i})" opacity="${energy*(.25+random()*.65)}"/>`;
+        }
+        const flowX = .0009+point.x/1200*.0005+energy*.0007;
+        const flowY = .0011+point.y/1800*.0005+energy*.001;
+        if (variant === 0) colorPlacement.push(`<text x="40" y="1740" fill="#00dfff" font-size="25">Neighborhood source · flow ${Math.round(chaos)} · pigment variation ${Math.round(energy*100)}%</text>`);
+        return defs +
+          `<mask id="${id}-plume" maskUnits="userSpaceOnUse" x="-600" y="-600" width="2400" height="3000"><rect x="-600" y="-600" width="2400" height="3000" fill="url(#${id}-fade)"/></mask>
+          <filter id="${id}-warp" filterUnits="userSpaceOnUse" x="-600" y="-600" width="2400" height="3000" color-interpolation-filters="sRGB">
+            <feTurbulence type="fractalNoise" baseFrequency="${flowX} ${flowY}" numOctaves="2" seed="${Math.abs(seed % 1000)}" result="flow"/>
+            <feDisplacementMap in="SourceGraphic" in2="flow" scale="${chaos}" xChannelSelector="R" yChannelSelector="G" result="folded"/>
+            <feTurbulence type="fractalNoise" baseFrequency=".004 .003" numOctaves="3" seed="${Math.abs((seed+31)%1000)}" result="eddies"/>
+            <feDisplacementMap in="folded" in2="eddies" scale="${25+energy*290}" xChannelSelector="G" yChannelSelector="R"/>
+          </filter>
+          <pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="${tint(colors[0], .92)}"/><g filter="url(#${id}-warp)"><g mask="url(#${id}-plume)"><rect x="-600" y="-600" width="2400" height="3000" fill="url(#${id}-ink)"/>${pockets}</g></g><rect width="1200" height="1800" fill="url(#${id}-core)"/></pattern>`;
+      }
+      const count = 4 + Math.round(density * 18);
+      let defs = '', clouds = '';
+      for (let i = 0; i < count; i++) {
+        const offsetX = (random() - .5) * 1500, offsetY = (random() - .5) * 2100;
+        const x = point.x + (i === 0 ? 0 : offsetX), y = point.y + (i === 0 ? 0 : offsetY);
+        const rx = 360 + random() * 480, ry = 400 + random() * 650;
+        const color = colors[i % colors.length];
+        if (variant === 0) colorPlacement.push(`<g fill="none" stroke="#00dfff" stroke-width="3"><ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" stroke-dasharray="10 10" opacity=".4"/><path d="M ${x-14} ${y} h 28 M ${x} ${y-14} v 28"/></g><text x="${x+18}" y="${y-12}" fill="#00dfff" font-size="25">${i+1}</text>`);
+        defs += `<radialGradient id="${id}-cloud-${i}"><stop stop-color="${color}" stop-opacity="${.55 + density * .4}"/><stop offset=".45" stop-color="${color}" stop-opacity=".5"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`;
+        clouds += `<ellipse cx="${x}" cy="${y}" rx="${rx}" ry="${ry}" fill="url(#${id}-cloud-${i})"/>`;
+      }
+      return defs + `<pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="${tint(colors[0], .85)}"/>${clouds}</pattern>`;
+    }
+    const compositionRules = {
+      club: 'Name across the top and down both sides; address wraps the inner opening.',
+      nightClub: 'Outer address band wraps the inner three-sided name; name keeps its natural length.',
+      bar: 'Three centered name bands step inward with decreasing heights; address sits above.',
+      thirdSpace: 'Three name bands grow downward in height and stay anchored to the bottom; address sits above.',
+      arena: 'Full venue name repeats on the inner upper and lower arcs; address follows the outer arcs.',
+      concertHall: 'Four name slots form two columns of waves; address spans the top envelope.',
+      outdoors: 'Name follows the upper wave and lower bowl; address sits above the lower name bands.'
+    };
+    function compositionOverlay() {
+      const grid = activeGrid(), f = grid.frame, slots = grid.slots(typeGrowth());
+      const order = grid.wordOrder || [0, 1, 2, 3, 4, 5];
+      const legend = $('compositionRules');
+      legend.hidden = !$('colorGrid').checked;
+      legend.innerHTML = `<b>${esc(VENUE_TYPES[S.type][0])}</b>: ${compositionRules[VENUE_TYPES[S.type][2]]}<br>Magenta: frame, text slots, reading direction and footer baseline. Cyan: color placement. Slot sizes follow years open / serif growth.<br>` +
+        slots.map((slot, i) => {
+          const indices = Array.isArray(order[i]) ? order[i] : [order[i]];
+          const nameSlots = grid.nameSlots || 3;
+          const words = slot.fullName ? 'full venue name' : indices.map(n => n < nameSlots ? `name ${n+1}` : `address ${n-nameSlots+1}`).join(' + ');
+          return `${i+1}: ${words} · ${slot.radial ? slot.radial + ' arc' : slot.wave ? 'wave' : slot.envelope ? 'envelope' : `${slot.rot || 0}°`}`;
+        }).join('<br>');
+      const baseline = grid.footerY ? grid.footerY(typeGrowth()) : CFG.footerY;
+      return `<g pointer-events="none"><g fill="none" stroke="#ff269d" stroke-width="3"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/><path d="M ${f.x} ${baseline} H ${f.x+f.w}" stroke-dasharray="12 8"/></g>` +
+        slots.map((slot, i) => {
+          const x = slot.radial ? 600 : slot.x + 22;
+          const y = slot.radial ? (slot.radial === 'top' ? 585-slot.radius : 1050+slot.radius) : slot.y + 25;
+          return slotGuide(slot).replaceAll('#00a2ff', '#ff269d') +
+            `<g><rect x="${x-16}" y="${y-23}" width="${slot.radial ? 125 : 155}" height="32" fill="#111" opacity=".85"/><text x="${x-10}" y="${y}" fill="#ff72c0" font-size="24">${i+1} · ${slot.radial || `${slot.rot || 0}°`}</text></g>`;
+        }).join('') + '</g>';
+    }
+    function colorGridOverlay() {
+      const point = projectVenue();
+      let lines = '', labels = '';
+      for (let i = 1; i < 8; i++) {
+        const x = i * 150, lon = SF_EXTENT.west + i / 8 * (SF_EXTENT.east-SF_EXTENT.west);
+        lines += `<path d="M ${x} 0 V 1800"/>`;
+        labels += `<text x="${x+5}" y="1775">${lon.toFixed(3)}°</text>`;
+      }
+      for (let i = 1; i < 12; i++) {
+        const y = i * 150, lat = SF_EXTENT.north - i / 12 * (SF_EXTENT.north-SF_EXTENT.south);
+        lines += `<path d="M 0 ${y} H 1200"/>`;
+        labels += `<text x="8" y="${y-8}">${lat.toFixed(3)}°</text>`;
+      }
+      const label = point.located ? `Neighborhood: ${point.lat.toFixed(5)}° N, ${point.lon.toFixed(5)}° · north ↑ east →` :
+        'No neighborhood match — using city center.';
+      const outside = point.x < 0 || point.x > 1200 || point.y < 0 || point.y > 1800;
+      return `<g pointer-events="none"><g fill="none" stroke="#00dfff" stroke-width="2" opacity=".5">${lines}</g><g fill="#00dfff" font-size="21" stroke="#111" stroke-width="3" paint-order="stroke">${labels}</g>${colorPlacement.join('')}
+        ${point.located ? `<g fill="none" stroke="#ffee00" stroke-width="5"><circle cx="${point.x}" cy="${point.y}" r="22"/><path d="M ${point.x-40} ${point.y} h 80 M ${point.x} ${point.y-40} v 80"/></g>` : ''}
+        <rect x="20" y="20" width="1160" height="80" fill="#111" opacity=".85"/><text x="40" y="53" fill="#00dfff" font-size="24">${esc(label)}</text><text x="40" y="84" fill="white" font-size="22">${outside ? 'Venue outside SF extent — marker is off postcard.' : 'SF coordinate grid · yellow: neighborhood · cyan: color · magenta: composition'}</text></g>`;
+    }
     // Compose the postcard from gradients, grain, clipping masks, outlined lettering, and footer.
-    function build() {
+    function build(preview = false) {
+      colorPlacement = [];
       typeClipId = 0;
       const G = activeGrid(),
         f = G.frame,
@@ -928,7 +1081,7 @@
         borderShape = `<path fill-rule="evenodd" d="M ${kl} ${kl} H ${1200-kl} V ${1800-kl} H ${kl} Z M ${f.x} ${f.y} H ${f.x+f.w} V ${f.y+f.h} H ${f.x} Z"/>`,
         guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in" style="isolation:isolate"><defs>
-    ${grad('A',kl,1800-kl,A)}${grad('B',f.y,f.y+f.h,B)}
+    ${colorField('A',cols,A,kl,1800-kl,0)}${colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
     <clipPath id="cd"><rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}"/></clipPath>
     <clipPath id="fr"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></clipPath>
@@ -952,7 +1105,7 @@
     <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     ${footer()}
     ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.7" style="mix-blend-mode:screen"/>` : ''}
-    ${guides}</svg>`;
+    ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}</svg>`;
     }
 
     /* ================= UI ================= */
@@ -961,7 +1114,8 @@
     const draw = () => {
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
-        $('pv').innerHTML = build();
+        $('compositionRules').hidden = !$('colorGrid').checked;
+        $('pv').innerHTML = build(true);
         msgs()
       })
     };
@@ -988,6 +1142,9 @@
       $('name').value = S.name;
       $('addr').value = S.addr;
       $('hood').value = S.hood;
+      $('colorStyle').value = S.colorStyle;
+      $('latitude').value = S.latitude ?? '';
+      $('longitude').value = S.longitude ?? '';
       $('yr').value = $('yn').value = S.years;
       $('cr').value = tFromCap(S.cap);
       $('cn2').value = S.cap;
@@ -1011,7 +1168,8 @@
       });
     }
     const load = p => {
-      S = JSON.parse(JSON.stringify(p));
+      S = JSON.parse(JSON.stringify({...DEF, ...p, colorStyle: S.colorStyle, latitude: p.latitude ?? null, longitude: p.longitude ?? null}));
+      updateNeighborhoodCoordinates();
       sync();
       draw()
     };
@@ -1058,7 +1216,9 @@
     });
     bind('name', e => S.name = e.value);
     bind('addr', e => S.addr = e.value);
-    bind('hood', e => S.hood = e.value);
+    bind('hood', e => { S.hood = e.value; updateNeighborhoodCoordinates(); });
+    bind('colorStyle', e => S.colorStyle = e.value);
+    bind('colorGrid', () => {});
     bind('yr', e => {
       S.years = +e.value;
       $('yn').value = e.value;
@@ -1141,6 +1301,222 @@
       a.download = (S.name.replace(/\W+/g, '-') || 'postcard') + '.' + ext;
       a.click()
     };
+    // Validated snapshot of data/Neighborhood Locations  - Sheet1.csv.
+    // Embedded so neighborhood lookup also works when index.html is opened directly.
+    const NEIGHBORHOOD_LOCATIONS = [
+  {
+    "name": "Bayview",
+    "latitude": 37.7296,
+    "longitude": -122.3924
+  },
+  {
+    "name": "Bernal Heights",
+    "latitude": 37.7412,
+    "longitude": -122.4148
+  },
+  {
+    "name": "Castro",
+    "latitude": 37.7609,
+    "longitude": -122.435
+  },
+  {
+    "name": "Civic Center",
+    "latitude": 37.7793,
+    "longitude": -122.4193
+  },
+  {
+    "name": "Crocker/Amazon/Excelsior",
+    "latitude": 37.7217,
+    "longitude": -122.4316
+  },
+  {
+    "name": "Dogpatch",
+    "latitude": 37.7591,
+    "longitude": -122.3895
+  },
+  {
+    "name": "Fillmore",
+    "latitude": 37.7839,
+    "longitude": -122.4335
+  },
+  {
+    "name": "Financial District/SoMa",
+    "latitude": 37.787,
+    "longitude": -122.401
+  },
+  {
+    "name": "Glen Park",
+    "latitude": 37.733,
+    "longitude": -122.433
+  },
+  {
+    "name": "Golden Gate Park",
+    "latitude": 37.7694,
+    "longitude": -122.4862
+  },
+  {
+    "name": "Haight-Ashbury",
+    "latitude": 37.7692,
+    "longitude": -122.4481
+  },
+  {
+    "name": "Hayes Valley",
+    "latitude": 37.7764,
+    "longitude": -122.4242
+  },
+  {
+    "name": "Ingleside",
+    "latitude": 37.7219,
+    "longitude": -122.4528
+  },
+  {
+    "name": "Inner Richmond",
+    "latitude": 37.7801,
+    "longitude": -122.4662
+  },
+  {
+    "name": "Lake Merced",
+    "latitude": 37.728,
+    "longitude": -122.4938
+  },
+  {
+    "name": "Little Saigon",
+    "latitude": 37.7833,
+    "longitude": -122.4167
+  },
+  {
+    "name": "Lower Haight",
+    "latitude": 37.7721,
+    "longitude": -122.4312
+  },
+  {
+    "name": "Marina",
+    "latitude": 37.803,
+    "longitude": -122.4368
+  },
+  {
+    "name": "Mid-Market",
+    "latitude": 37.7813,
+    "longitude": -122.4112
+  },
+  {
+    "name": "Mission",
+    "latitude": 37.7599,
+    "longitude": -122.4191
+  },
+  {
+    "name": "Mission Bay",
+    "latitude": 37.7721,
+    "longitude": -122.3942
+  },
+  {
+    "name": "Mission/Bernal",
+    "latitude": 37.7505,
+    "longitude": -122.4168
+  },
+  {
+    "name": "Nob Hill",
+    "latitude": 37.793,
+    "longitude": -122.4161
+  },
+  {
+    "name": "Noe Valley",
+    "latitude": 37.7502,
+    "longitude": -122.4337
+  },
+  {
+    "name": "NOPA",
+    "latitude": 37.7749,
+    "longitude": -122.4427
+  },
+  {
+    "name": "North Beach",
+    "latitude": 37.8003,
+    "longitude": -122.4102
+  },
+  {
+    "name": "Outer Sunset",
+    "latitude": 37.7535,
+    "longitude": -122.4952
+  },
+  {
+    "name": "Potrero Hill",
+    "latitude": 37.7566,
+    "longitude": -122.4011
+  },
+  {
+    "name": "Presidio",
+    "latitude": 37.7989,
+    "longitude": -122.4662
+  },
+  {
+    "name": "Richmond",
+    "latitude": 37.7806,
+    "longitude": -122.4706
+  },
+  {
+    "name": "SoMa",
+    "latitude": 37.7772,
+    "longitude": -122.4111
+  },
+  {
+    "name": "SoMa/Union Square",
+    "latitude": 37.7855,
+    "longitude": -122.4075
+  },
+  {
+    "name": "Sunset",
+    "latitude": 37.7535,
+    "longitude": -122.4952
+  },
+  {
+    "name": "Tenderloin",
+    "latitude": 37.7847,
+    "longitude": -122.4141
+  },
+  {
+    "name": "Theater District",
+    "latitude": 37.7868,
+    "longitude": -122.4104
+  },
+  {
+    "name": "Union Square",
+    "latitude": 37.7879,
+    "longitude": -122.4075
+  },
+  {
+    "name": "Union Square/Downtown",
+    "latitude": 37.7875,
+    "longitude": -122.4055
+  },
+  {
+    "name": "Union Square/Tenderloin",
+    "latitude": 37.7863,
+    "longitude": -122.4108
+  },
+  {
+    "name": "Upper Market",
+    "latitude": 37.7617,
+    "longitude": -122.4351
+  }
+];
+    const INVALID_NEIGHBORHOODS = [];
+    const normalizeNeighborhood = value => value.normalize('NFKD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase().replace(/[^a-z0-9]/g, '');
+    const neighborhoodIndex = new Map(NEIGHBORHOOD_LOCATIONS.map(row => [normalizeNeighborhood(row.name), row]));
+    $('neighborhoodOptions').innerHTML = NEIGHBORHOOD_LOCATIONS.map(row => `<option value="${esc(row.name)}"></option>`).join('');
+    function updateNeighborhoodCoordinates() {
+      const match = neighborhoodIndex.get(normalizeNeighborhood(S.hood));
+      S.latitude = match?.latitude ?? null;
+      S.longitude = match?.longitude ?? null;
+      $('latitude').value = S.latitude ?? '';
+      $('longitude').value = S.longitude ?? '';
+      const invalid = INVALID_NEIGHBORHOODS.some(name => normalizeNeighborhood(name) === normalizeNeighborhood(S.hood));
+      $('locationStatus').textContent = match ? `Neighborhood anchor: ${match.name} · ${match.latitude}, ${match.longitude}` :
+        invalid ? `${S.hood}: longitude is incomplete in the spreadsheet. Using city center until corrected.` :
+        S.hood.trim() ? `No spreadsheet match for “${S.hood}”. Choose a suggested neighborhood. Using city center.` :
+        'Choose a neighborhood to place the color field.';
+    }
     $('texture').onchange = async e => {
       const file = e.target.files[0];
       if (!file) return;
@@ -1184,6 +1560,7 @@
     });
     sync();
     draw();
+    updateNeighborhoodCoordinates();
     </script>
   </body>
 </html>
