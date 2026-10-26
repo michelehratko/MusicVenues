@@ -239,6 +239,9 @@
             <option value="2">
               Fit more words per line
             </option>
+            <option value="3">
+              Split words across containers
+            </option>
           </select>
         </label>
         <label style="flex-direction:row;gap:6px;align-items:center">
@@ -362,15 +365,11 @@
     const VENUE_TYPES = [
       ['Club', 1, 'club'],
       ['Night club', 1, 'nightClub'],
-      ['Theater', 0],
-      ['Bar', 0],
-      ['Dive', 0],
-      ['Lounge', 0],
-      ['Hall', 0],
-      ['Arena', 0],
-      ['Café', 0],
-      ['Cellar', 0],
-      ['Outdoor', 0]
+      ['Concert hall / Theater', 1, 'concertHall'],
+      ['Bar', 1, 'bar'],
+      ['Arena', 1, 'arena'],
+      ['Third space', 1, 'thirdSpace'],
+      ['Outdoors', 1, 'outdoors']
     ]; // [name, implemented, grid key]
     const GENRES = [
       ['Rock', '#e8332a'],
@@ -476,6 +475,100 @@
             {x: 90, y: 75, w: 1020, h: A, rot: 0}
           ];
         }
+      },
+      bar: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        wordOrder: [0, 1, 2, [3, 4, 5]],
+        slots: g => {
+          // Centered, stepped name bands meet edge to edge as their slabs grow.
+          const first = 260 * g,
+            second = 180 * g,
+            third = 120 * g,
+            top = 500 - 120 * (g - 1);
+          return [
+            {x: 90, y: top, w: 1020, h: first, rot: 0},
+            {x: 200, y: top + first, w: 800, h: second, rot: 0},
+            {x: 310, y: top + first + second, w: 580, h: third, rot: 0},
+            {x: 200, y: 75, w: 800, h: 80 * g, rot: 0,
+              naturalLength: true, align: 'center'}
+          ];
+        }
+      },
+      thirdSpace: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        wordOrder: [0, 1, 2, [3, 4, 5]],
+        // Keep the stepped-height name stack anchored to the bottom frame edge.
+        slots: g => {
+          const first = 110 * g,
+            second = 190 * g,
+            third = 250 * g,
+            top = 1715 - first - second - third;
+          return [
+            {x: 90, y: top, w: 1020, h: first, rot: 0},
+            {x: 90, y: top + first, w: 1020, h: second, rot: 0},
+            {x: 90, y: top + first + second, w: 1020, h: third, rot: 0},
+            {x: 200, y: 75, w: 800, h: 90 * g, rot: 0,
+              naturalLength: true, align: 'center'}
+          ];
+        },
+        // Metadata stays in the open field above the bottom-anchored lettering.
+        footerY: g => 1715 - 550 * g - 40
+      },
+      arena: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        // Full names occupy the inner ring; the address has its own outer ring.
+        wordOrder: [[0, 1, 2], [0, 1, 2], 3, [4, 5]],
+        slots: g => {
+          const addressBand = 70 * g,
+            nameBand = 130 * g,
+            gap = 12 * g,
+            addressRadius = 510 - addressBand / 2,
+            nameRadius = 510 - addressBand - gap - nameBand / 2;
+          return [
+            {radial: 'top', radius: nameRadius, h: nameBand, fullName: true},
+            {radial: 'bottom', radius: nameRadius, h: nameBand, fullName: true},
+            {radial: 'top', radius: addressRadius, h: addressBand, pathAlign: 'side-center', startY: (585 + 1050) / 2},
+            {radial: 'bottom', radius: addressRadius, h: addressBand, pathAlign: 'side-center', startY: (585 + 1050) / 2, reverse: true}
+          ];
+        }
+      },
+      concertHall: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        nameSlots: 4,
+        wordOrder: [0, 1, 2, 3, [4, 5, 6]],
+        slots: g => {
+          const nameHeight = 170 * g,
+            addressHeight = 60 * g,
+            top = 75 + addressHeight + 50 + 70;
+          return [
+            {wave: true, x: 90, y: top, w: 510, h: nameHeight, rise: 70},
+            {wave: true, x: 600, y: top, w: 510, h: nameHeight, rise: 70},
+            {wave: true, x: 90, y: top + nameHeight, w: 510, h: nameHeight, rise: 70},
+            {wave: true, x: 600, y: top + nameHeight, w: 510, h: nameHeight, rise: 70},
+            {envelope: true, x: 90, y: 75, w: 1020, h: addressHeight,
+              bottom: top, rise: 70}
+          ];
+        }
+      },
+      outdoors: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        wordOrder: [0, 2, 1, [3, 4, 5]],
+        slots: g => {
+          const first = 150 * g, second = 150 * g,
+            third = 120 * g, address = 60 * g,
+            bottom = 1715 - 150 - second,
+            bowl = {x: 90, w: 1020, depth: 150};
+          return [
+            {wave: true, x: 90, y: 225, w: 1020, h: first, rise: 150},
+            {wave: true, x: 90, y: bottom, w: 1020, h: second, bowl},
+            {wave: true, x: 230, y: bottom - third, w: 740, h: third, bowl},
+            {wave: true, x: 330, y: bottom - third - address, w: 540, h: address, bowl}
+          ];
+        },
+        footerY: g => {
+          const address = GRIDS.outdoors.slots(g)[3];
+          return address.y + waveOffset(address, 0) - 40;
+        }
       }
     };
     const activeGrid = () => GRIDS[VENUE_TYPES[S.type]?.[2]] || GRIDS.club;
@@ -541,7 +634,7 @@
       err = '';
 
     /* ================= NAME FITTING ================= */
-    // Group adjacent short words first, then merge the shortest pairs until three name slots remain.
+    // Group short words, then reduce to the number of name slots in the selected grid.
     function splitName(name, c = CFG) {
       let g = name.trim().toUpperCase().split(/\s+/).filter(Boolean);
       const len = s => s.replace(/ /g, '').length;
@@ -558,13 +651,46 @@
         return [b, m]
       };
       const merge = b => g.splice(b, 2, g[b] + ' ' + g[b + 1]);
-      while (g.length > 1) {
+      while (!c.splitWords && g.length > 1) {
         const [b, m] = minPair();
         if (m >= c.packBelow) break;
         merge(b)
       } // pack short words
-      while (g.length > 3) merge(minPair()[0]); // reduce to 3 groups
-      return [g[0] || '', g[1] || '', g[2] || ''];
+      const count = c.nameSlots || 3;
+      while (g.length > count) merge(minPair()[0]);
+      if (c.splitWords && g.length < count) {
+        // Allocate extra containers to the longest words before dividing them evenly.
+        const parts = g.map(() => 1),
+          letters = word => [...word].filter(c => /[\p{L}\p{N}]/u.test(c)).length;
+        let used = g.length;
+        while (used < count) {
+          let best = -1;
+          g.forEach((word, i) => {
+            if (word.includes(' ') || letters(word) < (parts[i] + 1) * 2) return;
+            if (best < 0 || word.length / parts[i] > g[best].length / parts[best]) best = i;
+          });
+          if (best < 0) break;
+          parts[best]++; used++;
+        }
+        g = g.flatMap((word, i) => {
+          const out = [];
+          let rest = [...word];
+          for (let remaining = parts[i]; remaining > 1; remaining--) {
+            let cut = -1, score = Infinity;
+            for (let j = 1; j < rest.length; j++) {
+              const left = rest.slice(0, j).join(''), right = rest.slice(j).join('');
+              if (letters(left) < 2 || letters(right) < 2 * (remaining - 1) ||
+                  /['’]$/.test(left) || /^['’]/.test(right)) continue;
+              const distance = Math.abs(j - rest.length / remaining);
+              if (distance < score) {cut = j; score = distance;}
+            }
+            if (cut < 0) break;
+            out.push(rest.slice(0, cut).join('')); rest = rest.slice(cut);
+          }
+          return [...out, rest.join('')];
+        });
+      }
+      return Array.from({length: count}, (_, i) => g[i] || '');
     }
     console.table(["Slim's", "Blue Room", "Bar of Gold", "Bimbo's 365 Club",
       "The Great American Music Hall"
@@ -587,7 +713,8 @@
         sx = slot.naturalLength ? Math.min(1, length / width) : length / width,
         sy = thickness / (y1 - y0 || 1),
         // CCW words finish at the upper corner and extend downward as they grow.
-        offset = slot.naturalLength && slot.rot < 0 ? length - width * sx : 0;
+        offset = slot.align === 'center' ? (length - width * sx) / 2 :
+          slot.naturalLength && slot.rot < 0 ? length - width * sx : 0;
       return `translate(${offset} 0) scale(${sx} ${sy}) translate(${-x0} ${-y0})`;
     }
     // returns array of fn(extraAttrs)->svg markup (one per glyph)
@@ -668,12 +795,165 @@
       return paths.map(path => ex =>
         `<path ${ex} transform="${tf} ${fit}" d="${path.toPathData(3)}"/>`);
     }
+    // A half-ring includes both straight legs and the curved end, split at mid-height.
+    function ringPoint(radius, distance, bottom) {
+      const arcEnd = Math.PI * radius / 2,
+        halfLength = Math.PI * radius + 465;
+      // Side-centered labels may continue around either neighboring curved end.
+      if (Math.abs(distance) > halfLength / 2) {
+        const otherDistance = distance < 0 ? -halfLength - distance : halfLength - distance,
+          point = ringPoint(radius, otherDistance, !bottom);
+        return {...point, degrees: point.degrees + 180};
+      }
+      if (distance < -arcEnd) {
+        const leg = -distance - arcEnd;
+        return {x: 600 - radius, y: bottom ? 1050 - leg : 585 + leg,
+          degrees: bottom ? 90 : -90};
+      }
+      if (distance > arcEnd) {
+        const leg = distance - arcEnd;
+        return {x: 600 + radius, y: bottom ? 1050 - leg : 585 + leg,
+          degrees: bottom ? -90 : 90};
+      }
+      const angle = distance / radius;
+      return {x: 600 + radius * Math.sin(angle),
+        y: bottom ? 1050 + radius * Math.cos(angle) : 585 - radius * Math.cos(angle),
+        degrees: (bottom ? -angle : angle) * 180 / Math.PI};
+    }
+    // Place glyphs by arc distance; each glyph follows its path's tangent.
+    // Reuse the slab renderer so hosted and uploaded fonts share years behavior.
+    function setRadialText(slot, text) {
+      if (!text) return [];
+      const thickness = slot.h,
+        ctx = document.createElement('canvas').getContext('2d');
+      ctx.font = '400 100px manicotti, "Rubik Mono One", Impact, sans-serif';
+      const capRatio = DF ? DF.charToGlyph('H').getBoundingBox().y2 / DF.unitsPerEm :
+          (ctx.measureText('H').actualBoundingBoxAscent || 72) / 100,
+        fs = thickness / typeGrowth() / capRatio;
+      ctx.font = `400 ${fs}px manicotti, "Rubik Mono One", Impact, sans-serif`;
+      const chars = [...text],
+        widths = chars.map(c => DF ? DF.getAdvanceWidth(c, fs) : ctx.measureText(c).width),
+        total = widths.reduce((sum, width) => sum + width, 0),
+        // Keep natural widths; only condense after the whole half-ring is used.
+        sideLength = slot.startY == null ? 232.5 :
+          slot.radial === 'bottom' ? 1050 - slot.startY : slot.startY - 585,
+        available = slot.pathAlign === 'side-center' ?
+          Math.PI * slot.radius + 465 - thickness : Math.PI * slot.radius + 2 * sideLength - thickness,
+        fit = Math.min(1, available / (total || 1)),
+        sideCenter = -Math.PI * slot.radius / 2 - sideLength;
+      // Center the whole address on the side's page-center point, not its first glyph.
+      let distance = slot.pathAlign === 'side-center' ? sideCenter - total * fit / 2 :
+        slot.pathAlign === 'start' ? sideCenter : -total * fit / 2;
+      if (slot.pathAlign === 'side-center') {
+        const visualCenter = start => {
+          let cursor = start, minY = Infinity, maxY = -Infinity;
+          chars.forEach((c, i) => {
+            const width = widths[i] * fit,
+              center = cursor + width / 2,
+              point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom'),
+              angle = point.degrees * Math.PI / 180,
+              extent = Math.abs(Math.sin(angle)) * width / 2 +
+                Math.abs(Math.cos(angle)) * thickness / 2;
+            cursor += width;
+            if (!c.trim()) return;
+            minY = Math.min(minY, point.y - extent);
+            maxY = Math.max(maxY, point.y + extent);
+          });
+          return (minY + maxY) / 2;
+        };
+        // Slide along the ring until the rotated lettering's visible bounds balance.
+        const range = (Math.PI * slot.radius + 465) / 4,
+          target = slot.startY ?? 900;
+        let low = distance - range, high = distance + range;
+        for (let i = 0; i < 40; i++) {
+          const middle = (low + high) / 2,
+            error = visualCenter(middle) - target;
+          if (error * (slot.reverse ? 1 : -1) < 0) low = middle;
+          else high = middle;
+        }
+        distance = (low + high) / 2;
+      }
+      return chars.flatMap((c, i) => {
+        const width = widths[i] * fit,
+          center = distance + width / 2,
+          point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom'),
+          {x, y} = point,
+          degrees = point.degrees + (slot.reverse ? 180 : 0);
+        distance += width;
+        if (!c.trim()) return [];
+        const glyph = setText({x: -width / 2, y: -thickness / 2,
+          w: width, h: thickness, rot: 0}, c);
+        return glyph.map(render => ex =>
+          `<g transform="translate(${x} ${y}) rotate(${degrees})">${render(ex)}</g>`);
+      });
+    }
+    // Warp the entire text band with a continuous vertical bow. Narrow vector
+    // slices shear the original lettering instead of rotating individual glyphs.
+    function waveOffset(slot, x) {
+      if (slot.bowl) {
+        const t = (slot.x + x - slot.bowl.x) / slot.bowl.w;
+        return 4 * slot.bowl.depth * t * (1 - t);
+      }
+      const t = x / slot.w;
+      return -4 * slot.rise * t * (1 - t);
+    }
+    // Map the address's bottom to the two title arches; its top remains flat.
+    function envelopeHeight(slot, x) {
+      const half = slot.w / 2,
+        local = x <= half ? x : x - half,
+        t = local / half;
+      return slot.bottom - slot.y - 4 * slot.rise * t * (1 - t);
+    }
+    function setWaveText(slot, text) {
+      if (!text) return [];
+      const source = setText({x: 0, y: 0, w: slot.w, h: slot.h, rot: 0}, text),
+        slices = slot.envelope ? 512 : 128,
+        step = slot.w / slices;
+      return [ex => {
+        const id = `warp-${typeClipId++}`,
+          clips = [], pieces = [];
+        for (let i = 0; i < slices; i++) {
+          const x0 = i * step, x1 = (i + 1) * step,
+            y0 = waveOffset(slot, x0), y1 = waveOffset(slot, x1),
+            slope = (y1 - y0) / step,
+            intercept = y0 - slope * x0;
+          clips.push(`<clipPath id="${id}-${i}" clipPathUnits="userSpaceOnUse"><rect x="${x0}" y="-2" width="${step + (i < slices - 1 ? .02 : 0)}" height="${slot.h + 4}"/></clipPath>`);
+          const matrix = slot.envelope ?
+            `1 0 0 ${envelopeHeight(slot, (x0 + x1) / 2) / slot.h} 0 0` :
+            `1 ${slope} 0 1 0 ${intercept}`;
+          pieces.push(`<g transform="matrix(${matrix})"><g clip-path="url(#${id}-${i})"><use href="#${id}-source"/></g></g>`);
+        }
+        return `<g transform="translate(${slot.x} ${slot.y})"><defs><g id="${id}-source">${source.map(render => render(ex)).join('')}</g>${clips.join('')}</defs>${pieces.join('')}</g>`;
+      }];
+    }
+    function slotGuide(slot) {
+      const attrs = 'fill="none" stroke="#00a2ff" stroke-dasharray="8 6" stroke-width="2"';
+      if (slot.envelope) {
+        const half = slot.w / 2, bottom = slot.bottom;
+        return `<path d="M ${slot.x} ${slot.y} H ${slot.x+slot.w} V ${bottom} Q ${slot.x+half*1.5} ${bottom-2*slot.rise} ${slot.x+half} ${bottom} Q ${slot.x+half/2} ${bottom-2*slot.rise} ${slot.x} ${bottom} Z" ${attrs}/>`;
+      }
+      if (slot.wave) {
+        const start = waveOffset(slot, 0), middle = waveOffset(slot, slot.w / 2),
+          end = waveOffset(slot, slot.w), control = 2 * middle - (start + end) / 2;
+        return [0, slot.h].map(offset => `<path d="M ${slot.x} ${slot.y+offset+start} Q ${slot.x+slot.w/2} ${slot.y+offset+control} ${slot.x+slot.w} ${slot.y+offset+end}" ${attrs}/>`).join('');
+      }
+      if (slot.radial) {
+        const r = slot.radius,
+          bottom = slot.radial === 'bottom',
+          y = bottom ? 1050 : 585,
+          sweep = bottom ? 0 : 1,
+          midpoint = slot.startY ?? 817.5;
+        return `<path d="M ${600-r} ${midpoint} L ${600-r} ${y} A ${r} ${r} 0 0 ${sweep} ${600+r} ${y} L ${600+r} ${midpoint}" ${attrs}/>`;
+      }
+      return `<rect x="${slot.x}" y="${slot.y}" width="${slot.w}" height="${slot.h}" ${attrs}/>`;
+    }
     // Align footer labels using font advance widths when exporting outlined text.
     function footer() {
-      const y = CFG.footerY,
+      const grid = activeGrid(),
+        y = grid.footerY ? grid.footerY(typeGrowth()) : CFG.footerY,
         sz = CFG.footerSize,
         k = CFG.ink;
-      const frame = activeGrid().frame,
+      const frame = grid.frame,
         inset = 24;
       return [
         [S.hood.toUpperCase(), frame.x + inset, y, 'start'],
@@ -745,7 +1025,9 @@
       const ad = S.addr.trim().toUpperCase().split(/\s+/).filter(Boolean);
       const nm = splitName(S.name, {
         ...CFG,
-        packBelow: CFG.packLevels[S.pack]
+        packBelow: CFG.packLevels[S.pack] ?? 0,
+        splitWords: S.pack === 3,
+        nameSlots: G.nameSlots || 3
       });
       if (S.swap)[nm[0], nm[1]] = [nm[1], nm[0]]; // swap name words 1 & 2
       const words = [...nm, ad[0] || '', ad[1] || '', ad[2] || ''];
@@ -753,8 +1035,10 @@
         order = G.wordOrder || [0, 1, 2, 3, 4, 5],
         items = SL.flatMap((slot, i) => {
           const indices = Array.isArray(order[i]) ? order[i] : [order[i]],
-            text = indices.map(index => words[index]).filter(Boolean).join(' ');
-          return setText({...slot, naturalLength: G.naturalLength}, text);
+            text = slot.fullName ? S.name.trim().toUpperCase() :
+              indices.map(index => words[index]).filter(Boolean).join(' ');
+          return slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
+            setText({naturalLength: G.naturalLength, ...slot}, text);
         });
       const cols = (S.genres.length ? S.genres : [1]).map(i => GENRES[i][1]),
         n = cols.length,
@@ -780,9 +1064,7 @@
         [tint(cols[n - 1]), 1]
       ];
       const kl = CFG.keyline,
-        guides = S.guides ? SL.map(s =>
-          `<rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" fill="none" stroke="#00a2ff" stroke-dasharray="8 6" stroke-width="2"/>`
-          ).join('') : '';
+        guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in"><defs>
     ${grad('A',kl,1800-kl,A)}${grad('B',f.y,f.y+f.h,B)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${sd}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
