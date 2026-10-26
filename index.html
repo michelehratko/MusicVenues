@@ -11,240 +11,106 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js">
     </script>
     <style>
-      /* Theme colors and safe-area spacing. */
-      :root {
-        --bg: #f6f4f1;
-        --pn: #fff;
-        --tx: #1a0a1f;
-        --mu: #6d6470;
-        --bd: #ddd6dd;
-        box-sizing: border-box;
-        padding-top: env(safe-area-inset-top, 0px);
-        padding-bottom: env(safe-area-inset-bottom, 0px)
+      :root { color-scheme: light; --bg: #dedede; --tx: #202020; --mu: #666; --bd: #888; }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--tx); font: 14px/1.35 Inter, Arial, sans-serif; }
+      button, input, select { font: inherit; color: inherit; }
+      .app { max-width: 1360px; margin: auto; padding: 0 36px; }
+      .workspace { min-height: 100svh; display: grid; grid-template-columns: minmax(320px, 410px) minmax(0, 1fr); gap: clamp(48px, 10vw, 180px); align-items: start; padding: 32px 0; }
+      .primary { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+      h1 { margin: 0 0 4px; font-size: 28px; line-height: 1.3; font-weight: 400; letter-spacing: -.7px; }
+      label { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+      input[type=text], input[type=number], select { width: 100%; min-width: 0; height: 30px; padding: 3px 8px; background: transparent; border: 1px solid var(--bd); border-radius: 0; }
+      input:focus-visible, select:focus-visible, button:focus-visible, summary:focus-visible { outline: 2px solid #222; outline-offset: 3px; }
+      input[type=range] { min-width: 0; accent-color: #333; }
+      .paired { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+      fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+      legend { padding: 0; margin-bottom: 7px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 7px 9px; }
+      .chip, .b { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 28px; padding: 3px 10px; border: 1px solid var(--bd); border-radius: 0; background: transparent; cursor: pointer; line-height: 1.2; }
+      .chip:hover, .b:hover { background: #d0d0d0; }
+      .chip.on { background: #242424; color: #fff; border-color: #242424; }
+      .chip i { display: none; }
+      .actions { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin-top: 5px; }
+      .preview { display: flex; justify-content: flex-end; align-items: flex-start; min-width: 0; padding-top: 4px; }
+      #pv { width: min(100%, calc((100svh - 80px) * 2 / 3)); aspect-ratio: 2 / 3; background: #fff; }
+      #pv svg { display: block; width: 100%; height: 100%; }
+      .advanced { border-top: 1px solid #aaa; padding: 28px 0 48px; }
+      h2 { margin: 0 0 22px; font-size: 19px; font-weight: 400; }
+      .advanced-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; }
+      .row { display: flex; gap: 10px; align-items: center; }
+      .row input[type=range] { flex: 1; width: 100%; }
+      .row input[type=number] { width: 82px; }
+      .check { flex-direction: row; align-items: center; gap: 8px; }
+      .wide { grid-column: 1 / -1; }
+      .msg { color: var(--mu); font-size: 12px; line-height: 1.6; }
+      .msg b { color: #9a3c18; }
+      .hint { color: var(--mu); font-size: 12px; }
+      details { color: var(--mu); font-size: 13px; }
+      details p { max-width: 720px; }
+      summary { cursor: pointer; }
+      @media (min-width: 851px) and (max-height: 800px) {
+        body { font-size: 13px; }
+        .workspace { padding: 26px 0; }
+        .primary { gap: 8px; }
+        label { gap: 4px; }
+        input[type=text], input[type=number], select { height: 28px; }
+        .chip, .b { min-height: 26px; padding: 3px 9px; }
+        legend { margin-bottom: 6px; }
+        .chips { gap: 6px 8px; }
+        .actions { margin-top: 3px; gap: 6px; }
       }
-
-      @media(prefers-color-scheme:dark) {
-        :root:not([data-theme="light"]) {
-          --bg: #16111a;
-          --pn: #211a26;
-          --tx: #f3edf5;
-          --mu: #a898ae;
-          --bd: #3a3040
-        }
+      @media (max-width: 850px) {
+        .app { padding: 0 24px; }
+        .workspace { grid-template-columns: minmax(280px, 1fr) minmax(0, 1fr); gap: 28px; }
+        .paired { gap: 16px; }
+        .advanced-grid { grid-template-columns: 1fr 1fr; }
       }
-
-      :root[data-theme="dark"] {
-        --bg: #16111a;
-        --pn: #211a26;
-        --tx: #f3edf5;
-        --mu: #a898ae;
-        --bd: #3a3040
-      }
-
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--tx);
-        font: 14px/1.4 Inter, system-ui, sans-serif
-      }
-
-      /* Responsive controls and postcard preview layout. */
-      .app {
-        display: grid;
-        grid-template-columns: minmax(300px, 360px) 1fr;
-        gap: 20px;
-        padding: 20px;
-        max-width: 1100px;
-        margin: auto
-      }
-
-      @media(max-width:760px) {
-        .app {
-          grid-template-columns: 1fr
-        }
-      }
-
-      aside {
-        background: var(--pn);
-        border: 1px solid var(--bd);
-        border-radius: 12px;
-        padding: 16px;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        align-self: start
-      }
-
-      label {
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        font-size: 12px;
-        color: var(--mu)
-      }
-
-      input[type=text],
-      input[type=number],
-      select {
-        font: inherit;
-        color: var(--tx);
-        padding: 7px 8px;
-        border: 1px solid var(--bd);
-        border-radius: 6px;
-        background: var(--bg);
-        min-width: 0
-      }
-
-      .row {
-        display: flex;
-        gap: 8px;
-        align-items: center
-      }
-
-      .row input[type=range] {
-        flex: 1
-      }
-
-      .row input[type=number] {
-        width: 80px
-      }
-
-      .chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px
-      }
-
-      .chip,
-      .b {
-        font: inherit;
-        font-size: 12px;
-        color: var(--tx);
-        border: 1px solid var(--bd);
-        background: var(--bg);
-        border-radius: 99px;
-        padding: 5px 11px;
-        cursor: pointer;
-        display: flex;
-        gap: 6px;
-        align-items: center
-      }
-
-      .chip i {
-        width: 12px;
-        height: 12px;
-        border-radius: 50%
-      }
-
-      .chip.on {
-        border-color: var(--tx);
-        box-shadow: 0 0 0 1px var(--tx)
-      }
-
-      .b.p {
-        background: var(--tx);
-        color: var(--bg)
-      }
-
-      .msg {
-        font-size: 12px;
-        color: var(--mu)
-      }
-
-      .msg b {
-        color: #c2410c;
-        font-weight: 600
-      }
-
-      details {
-        font-size: 12px;
-        color: var(--mu)
-      }
-
-      /* Preserve the postcard’s 4 × 6 proportions in the preview. */
-      #pv {
-        background: #fff;
-        box-shadow: 0 8px 30px rgba(0, 0, 0, .25);
-        width: min(100%, 440px);
-        aspect-ratio: 2/3;
-        margin: 0 auto
-      }
-
-      #pv svg {
-        width: 100%;
-        height: 100%;
-        display: block
+      @media (max-width: 620px) {
+        .app { padding: 0 20px; }
+        .workspace { grid-template-columns: 1fr; gap: 32px; padding: 24px 0 32px; }
+        .preview { justify-content: center; }
+        #pv { width: min(100%, 440px); }
+        .advanced-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
     <div class="app">
-      <!-- Generator controls; IDs connect these fields to the UI handlers below. -->
-      <aside>
-        <h1 style="font-size:16px;margin:0">
-          Venue postcard generator
-        </h1>
-        <div class="chips" id="pre">
-        </div>
-        <label>
-          <span>
-            Venue name (
-            <b id="cn">
-            </b>
-            )
-          </span>
-          <input id="name" type="text"/>
-        </label>
-        <label>
-          Address (3 words)
-          <input id="addr" type="text"/>
-        </label>
-        <label>
-          Neighborhood
-          <input id="hood" type="text"/>
-        </label>
-        <label>
-          Years open
-          <span class="row">
-            <input id="yr" max="200" min="1" type="range"/>
-            <input id="yn" max="200" min="1" type="number"/>
-          </span>
-        </label>
-        <label>
-          Capacity (log scale)
-          <span class="row">
-            <input id="cr" max="1000" min="0" type="range"/>
-            <input id="cn2" max="20000" min="30" type="number"/>
-          </span>
-        </label>
-        <label>
-          Venue type
-          <select id="type">
-          </select>
-        </label>
-        <label>
-          Genres (pick 1–3)
-          <span class="chips" id="gen">
-          </span>
-        </label>
-        <label>
-          Name line packing
-          <select id="pack">
-            <option value="0">
-              Spread out (one word per slot)
-            </option>
-            <option value="1">
-              Balanced
-            </option>
-            <option value="2">
-              Fit more words per line
-            </option>
-            <option value="3">
-              Split words across containers
-            </option>
-          </select>
-        </label>
-        <label style="flex-direction:row;gap:6px;align-items:center">
+      <section class="workspace" aria-label="Postcard editor">
+        <aside class="primary" aria-label="Main controls">
+          <h1>Postcard Generator</h1>
+          <label for="name">Venue Name<input id="name" type="text"/></label>
+          <label for="addr">Venue Address<input id="addr" type="text"/></label>
+          <label for="hood">Neighborhood<input id="hood" type="text"/></label>
+          <div class="paired">
+            <label for="opened">Year Opened<input id="opened" type="number" inputmode="numeric"/></label>
+            <label for="cn2">Capacity<input id="cn2" max="40000" min="30" type="number" inputmode="numeric"/></label>
+          </div>
+          <fieldset><legend>Venue Type</legend><div class="chips" id="type" role="group" aria-label="Venue type"></div></fieldset>
+          <fieldset><legend>Genres <span class="hint">(pick 1–3)</span></legend><div class="chips" id="gen" role="group" aria-label="Genres"></div></fieldset>
+          <label for="pack">Name Line Packing
+            <select id="pack">
+              <option value="0">Spread out (one word per slot)</option>
+              <option value="1">Balanced</option>
+              <option value="2">Fit more words per line</option>
+              <option value="3">Split words across containers</option>
+            </select>
+          </label>
+          <div class="actions">
+            <button type="button" class="b" id="rnd">Randomize</button>
+            <button type="button" class="b" id="svg">Download SVG</button>
+          </div>
+        </aside>
+        <main class="preview" aria-label="Postcard preview"><div id="pv"></div></main>
+      </section>
+      <section class="advanced" aria-labelledby="advanced-title">
+        <h2 id="advanced-title">More controls</h2>
+        <div class="advanced-grid">
+          <div class="wide"><label>Presets</label><div class="chips" id="pre"></div></div>
+          <label>Years Open<span class="row"><input id="yr" aria-label="Years open slider" max="200" min="1" type="range"/><input id="yn" aria-label="Years open" max="200" min="1" type="number"/></span></label>
+          <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
+        <label class="check">
           <input id="swap" type="checkbox"/>
           Swap name words 1 &amp; 2 (top ↔ left)
         </label>
@@ -280,7 +146,7 @@
           Seed offset (added to the neighborhood seed)
           <input id="seed" max="99" min="0" type="number"/>
         </label>
-        <label style="flex-direction:row;gap:6px;align-items:center">
+        <label class="check">
           <input id="guides" type="checkbox"/>
           Show slot guides
         </label>
@@ -292,23 +158,11 @@
           Footer font (optional sans)
           <input accept=".otf,.ttf,.woff" id="f2" type="file"/>
         </label>
-        <div class="msg" id="msg">
-        </div>
-        <div class="chips">
-          <button class="b" id="rnd">
-            Randomize
-          </button>
-          <button class="b" id="rst">
-            Reset
-          </button>
-          <button class="b p" id="svg">
-            Download SVG
-          </button>
-          <button class="b" id="png">
-            Download PNG
-          </button>
-        </div>
-        <details>
+
+          <div class="wide chips"><button type="button" class="b" id="rst">Reset</button><button type="button" class="b" id="png">Download PNG</button></div>
+          <div class="wide msg" id="msg" role="status"></div>
+          <div class="wide hint">Name length: <span id="cn"></span></div>
+          <div class="wide">        <details>
           <summary>
             README
           </summary>
@@ -352,13 +206,9 @@
             </code>
             checks run in the console.
           </p>
-        </details>
-      </aside>
-      <!-- SVG preview, regenerated whenever application state changes. -->
-      <main>
-        <div id="pv">
+        </details></div>
         </div>
-      </main>
+      </section>
     </div>
     <script>
     /* ================= CONFIG (edit me) ================= */
@@ -372,16 +222,16 @@
       ['Outdoors', 1, 'outdoors']
     ]; // [name, implemented, grid key]
     const GENRES = [
-      ['Rock', '#e8332a'],
-      ['Punk', '#ff1fd0'],
-      ['Jazz', '#2a4bff'],
-      ['Blues', '#2f8cff'],
-      ['Soul', '#ff9a1f'],
-      ['Hip-Hop', '#ffd21f'],
-      ['Electronic', '#19e6c1'],
-      ['Folk', '#7bc043'],
-      ['Metal', '#7a2bd1'],
-      ['Latin', '#ff6a3d']
+      ['pop', '#2f8cff'],
+      ['rock', '#e8332a'],
+      ['hip hop', '#ffd21f'],
+      ['punk', '#ff1fd0'],
+      ['mixed', '#ff9a1f'],
+      ['experimental', '#7a2bd1'],
+      ['classical', '#7bc043'],
+      ['electronic', '#19e6c1'],
+      ['jazz', '#2a4bff'],
+      ['latin', '#ff6a3d']
     ];
     const CFG = {
       fill: .9,
@@ -598,7 +448,7 @@
       years: YEAR - 1984,
       cap: 300,
       type: 0,
-      genres: [1],
+      genres: [3],
       seed: 0,
       grain: 60,
       guides: false,
@@ -616,7 +466,7 @@
         hood: "SoMa",
         years: 40,
         cap: 400,
-        genres: [3, 0]
+        genres: [8, 1]
       }],
       ['Great American (5 words)', {
         ...DEF,
@@ -625,7 +475,7 @@
         hood: "Tenderloin",
         years: YEAR - 1907,
         cap: 470,
-        genres: [7, 2, 4]
+        genres: [4, 8, 6]
       }]
     ];
     let S = JSON.parse(JSON.stringify(DEF)),
@@ -917,7 +767,7 @@
             y0 = waveOffset(slot, x0), y1 = waveOffset(slot, x1),
             slope = (y1 - y0) / step,
             intercept = y0 - slope * x0;
-          clips.push(`<clipPath id="${id}-${i}" clipPathUnits="userSpaceOnUse"><rect x="${x0}" y="-2" width="${step + (i < slices - 1 ? .02 : 0)}" height="${slot.h + 4}"/></clipPath>`);
+          clips.push(`<clipPath id="${id}-${i}" clipPathUnits="userSpaceOnUse"><rect x="${x0}" y="-2" width="${step + (i < slices - 1 ? 1.5 : 0)}" height="${slot.h + 4}"/></clipPath>`);
           const matrix = slot.envelope ?
             `1 0 0 ${envelopeHeight(slot, (x0 + x1) / 2) / slot.h} 0 0` :
             `1 ${slope} 0 1 0 ${intercept}`;
@@ -1040,7 +890,7 @@
           return slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
             setText({naturalLength: G.naturalLength, ...slot}, text);
         });
-      const cols = (S.genres.length ? S.genres : [1]).map(i => GENRES[i][1]),
+      const cols = (S.genres.length ? S.genres : [3]).map(i => GENRES[i][1]),
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
       // FIELD: genre colors repeated per capacity band; the spread slider randomizes band sizes
@@ -1064,26 +914,33 @@
         [tint(cols[n - 1]), 1]
       ];
       const kl = CFG.keyline,
+        // The colored frame and lettering are a single silhouette. Its inner
+        // contour disappears wherever a letter touches the frame.
+        borderShape = `<path fill-rule="evenodd" d="M ${kl} ${kl} H ${1200-kl} V ${1800-kl} H ${kl} Z M ${f.x} ${f.y} H ${f.x+f.w} V ${f.y+f.h} H ${f.x} Z"/>`,
         guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in"><defs>
     ${grad('A',kl,1800-kl,A)}${grad('B',f.y,f.y+f.h,B)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="${sd}" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
     <clipPath id="cd"><rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}"/></clipPath>
     <clipPath id="fr"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></clipPath>
-    <!-- Dilate the combined alpha once: touching letters share one exterior outline. -->
+    <!-- Close subpixel slice gaps before outlining and filling the shared silhouette. -->
+    <filter id="solidify" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" color-interpolation-filters="sRGB">
+      <feMorphology in="SourceAlpha" operator="dilate" radius=".35" result="joined"/>
+      <feMorphology in="joined" operator="erode" radius=".35"/>
+    </filter>
+    <!-- Outline the union of the entire colored frame and display lettering. -->
     <filter id="type-outline" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" color-interpolation-filters="sRGB">
       <feMorphology in="SourceAlpha" operator="dilate" radius="${sw}" result="union-edge"/>
       <feFlood flood-color="${k}" result="outline-ink"/>
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
-    <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${items.map(i=>i('fill="white" stroke="none"')).join('')}</mask></defs>
+    <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
+    <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <rect width="1200" height="1800" fill="#fff"/>
     <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
-    <g fill="${k}" stroke="none" filter="url(#type-outline)">${items.map(i=>i('')).join('')}</g>
+    <use href="#artwork-shape" filter="url(#type-outline)"/>
     <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
-    <g fill="none" stroke="${k}" stroke-width="${sw}"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></g>
-    <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="none" stroke="${k}" stroke-width="2"/>
     ${guides}${footer()}</svg>`;
     }
 
@@ -1113,8 +970,8 @@
       $('msg').innerHTML = w.map(x => `<div><b>•</b> ${x}</div>`).join('');
     }
     // Convert between the linear slider position and logarithmic venue capacity.
-    const capFromT = t => Math.round(30 * Math.pow(20000 / 30, t / 1000)),
-      tFromCap = c => Math.round(Math.log(c / 30) / Math.log(20000 / 30) * 1000);
+    const capFromT = t => Math.round(30 * Math.pow(40000 / 30, t / 1000)),
+      tFromCap = c => Math.round(Math.log(c / 30) / Math.log(40000 / 30) * 1000);
     // Copy application state into the controls after loading a preset or randomizing.
     function sync() {
       $('name').value = S.name;
@@ -1123,7 +980,11 @@
       $('yr').value = $('yn').value = S.years;
       $('cr').value = tFromCap(S.cap);
       $('cn2').value = S.cap;
-      $('type').value = S.type;
+      [...$('type').children].forEach((button, i) => {
+        button.classList.toggle('on', i === S.type);
+        button.setAttribute('aria-pressed', String(i === S.type));
+      });
+      $('opened').value = YEAR - S.years;
       $('grain').value = S.grain;
       $('seed').value = S.seed;
       $('guides').checked = S.guides;
@@ -1133,15 +994,26 @@
       $('slab').value = S.slab;
       $('slv').textContent = S.slab;
       $('swap').checked = S.swap;
-      [...$('gen').children].forEach((b, i) => b.classList.toggle('on', S.genres.includes(i)));
+      [...$('gen').children].forEach((b, i) => {
+        b.classList.toggle('on', S.genres.includes(i));
+        b.setAttribute('aria-pressed', String(S.genres.includes(i)));
+      });
     }
     const load = p => {
       S = JSON.parse(JSON.stringify(p));
       sync();
       draw()
     };
-    $('type').innerHTML = VENUE_TYPES.map(([t, ok], i) =>
-      `<option value="${i}" ${ok?'':'disabled'}>${t}${ok?'':' (coming soon)'}</option>`).join('');
+    $('type').innerHTML = VENUE_TYPES.map(([title, ok], i) =>
+      `<button type="button" class="chip" data-i="${i}" aria-pressed="false" ${ok ? '' : 'disabled'}>${title}</button>`).join('');
+    $('type').onclick = e => {
+      const button = e.target.closest('button');
+      if (!button || button.disabled) return;
+      S.type = +button.dataset.i;
+      sync(); draw();
+    };
+    $('opened').min = YEAR - 200;
+    $('opened').max = YEAR - 1;
     $('gen').innerHTML = GENRES.map(([g, c], i) =>
         `<button type="button" class="chip" data-i="${i}"><i style="background:${c}"></i>${g}</button>`)
       .join('');
@@ -1178,21 +1050,27 @@
     bind('hood', e => S.hood = e.value);
     bind('yr', e => {
       S.years = +e.value;
-      $('yn').value = e.value
+      $('yn').value = e.value;
+      $('opened').value = YEAR - S.years
     });
     bind('yn', e => {
       S.years = Math.min(200, Math.max(1, +e.value || 1));
-      $('yr').value = S.years
+      $('yr').value = S.years;
+      $('opened').value = YEAR - S.years
     });
     bind('cr', e => {
       S.cap = capFromT(+e.value);
       $('cn2').value = S.cap
     });
     bind('cn2', e => {
-      S.cap = Math.min(20000, Math.max(30, +e.value || 30));
+      S.cap = Math.min(40000, Math.max(30, +e.value || 30));
       $('cr').value = tFromCap(S.cap)
     });
-    bind('type', e => S.type = +e.value);
+    bind('opened', e => {
+      if (!e.value || !e.validity.valid) return;
+      S.years = YEAR - +e.value;
+      $('yr').value = $('yn').value = S.years;
+    });
     bind('grain', e => S.grain = +e.value);
     bind('seed', e => S.seed = Math.max(0, +e.value || 0));
     bind('guides', e => S.guides = e.checked);
@@ -1212,7 +1090,7 @@
         g = [];
       const k = 1 + (Math.random() * 3 | 0);
       while (g.length < k) {
-        const i = Math.random() * 10 | 0;
+        const i = Math.random() * GENRES.length | 0;
         if (!g.includes(i)) g.push(i)
       }
       load({
