@@ -665,7 +665,7 @@
           for (const key of ['y', 'y1', 'y2']) {
             if (key in command) command[key] = stretchY(command[key]);
           }
-        });
+        });   
         return path;
       }).filter(path => path.commands.length);
       const boxes = paths.map(path => path.getBoundingBox()),

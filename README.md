@@ -15,3 +15,4 @@ The initial `index.html` was empty. This is a structure scaffold; app behavior h
 - `src/grids/club.js`: club grid; add a sibling module for each additional venue type.
 
 Serve this directory over HTTP when developing, since the page uses JavaScript modules. For example, run `python3 -m http.server 8000`, then visit `http://localhost:8000`.
+ test tes 
