@@ -1316,20 +1316,27 @@
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
       const hasOffset = ['offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle);
-      const solidTypeColor = ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .22) : cols[0];
+      const solidTypeColor = ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .12) : cols[0];
+      const mixedArtist = hasOffset && S.artistType === 'mixed';
+      const artistTypeFill = hasOffset && S.artistType === 'touring' ? 'url(#artist-type-gradient)' : mixedArtist ? cols[0] : solidTypeColor;
+      const outlineColor = hasOffset && S.artistType === 'mixed' ? cols[1] || '#ffffff' :
+        hasOffset && S.artistType === 'local' ? solidTypeColor :
+        ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0];
       const offsetCount = 1 + Math.floor(9 * Math.max(0, Math.min(1, tFromCap(S.cap) / 1000))),
         offsetLayers = hasOffset ? Array.from({length: offsetCount}, (_, i) => offsetCount - i) : [],
         offsetDefs = offsetLayers.flatMap(i => [
-          [i * 12, ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0], `offset-${i}-ink`],
-          [i * 12 - 3, cols[1] || '#fffdf5', `offset-${i}-gap`]
+          [i * 12, outlineColor, `offset-${i}-ink`],
+          [i * 12 - 3, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5', `offset-${i}-gap`]
         ]).map(([radius, color, id]) => `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
-        offsetArtwork = offsetLayers.map(i => `<use href="#artwork-shape" filter="url(#offset-${i}-ink)"/>` +
+        offsetArtwork = offsetLayers.map(i => (mixedArtist || S.artistType === 'touring' ?
+          `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#mixed-outline-${i})"/>` :
+          `<use href="#artwork-shape" filter="url(#offset-${i}-ink)"/>`) +
           (['offsetGradient', 'offsetFull'].includes(S.colorStyle) ?
             `<rect width="1200" height="1800" fill="url(#offset-background)" mask="url(#offset-gap-${i})"/>` :
             `<use href="#artwork-shape" filter="url(#offset-${i}-gap)"/>`)).join('');
       // Stack genre bands upward from the bottom. Price changes their height,
       // never their count; the last color fills the remaining space above.
-      const gradientPalette = cols.length > 1 ? cols : [cols[0], tint(cols[0], .85)],
+      const gradientPalette = cols.length > 1 ? cols : [cols[0], '#ffffff'],
         ticketScale = Math.min(1, Math.max(0, S.ticketPrice || 0) / 200),
         bandHeight = .12 + .30 * ticketScale,
         blendWidth = bandHeight * .45,
@@ -1387,9 +1394,12 @@
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
     ${offsetDefs}
+    ${hasOffset && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape" filter="url(#offset-${i}-ink)"/></mask>`).join('') : ''}
+    ${hasOffset && S.artistType === 'touring' ? grad('artist-type-gradient', kl, 1800 - kl, gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
     ${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
       priceStops) +
       offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape" filter="url(#offset-${i}-gap)"/></mask>`).join('') : ''}
+    ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="${f.y}" x2="${f.x + f.w}" y2="${f.y + f.h}"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${items.filter(render => render.addressInk).map(render => render('fill="white" stroke="none"')).join('')}</mask>` : ''}
     <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <g clip-path="url(#postcard-edge)">
@@ -1398,7 +1408,8 @@
     ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? `
       <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
       ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
-      <g mask="url(#lt)"><rect width="1200" height="1800" fill="${solidTypeColor}"/></g>
+      <g mask="url(#lt)"><rect width="1200" height="1800" fill="${artistTypeFill}"/></g>
+      ${mixedArtist ? `<rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/>` : ''}
       ${S.colorStyle === 'screenprint' ? items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('') : ''}
     ` : `
       <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
@@ -1407,7 +1418,7 @@
       <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     `}
     </g>
-    ${S.independent === true ? `<rect x="${kl + 3}" y="${kl + 3}" width="${1200 - 2 * kl - 6}" height="${1800 - 2 * kl - 6}" fill="none" stroke="${cols[1] || tint(cols[0], .65)}" stroke-width="4" pointer-events="none"/>` : ''}
+    ${S.independent === true ? `<rect x="${kl + 3}" y="${kl + 3}" width="${1200 - 2 * kl - 6}" height="${1800 - 2 * kl - 6}" fill="none" stroke="${cols[1] || '#ffffff'}" stroke-width="4" pointer-events="none"/>` : ''}
     ${footer()}
     ${S.grain > 0 ? `<g clip-path="url(#cd)" pointer-events="none" style="mix-blend-mode:multiply" opacity="${Math.min(120, Math.max(0, S.grain)) / 120 * .28}"><rect width="1200" height="1800" filter="url(#print-noise)"/></g>` : ''}
     ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.7" style="mix-blend-mode:screen"/>` : ''}
