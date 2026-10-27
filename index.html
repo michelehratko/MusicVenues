@@ -33,7 +33,7 @@
       .chip i { display: none; }
       .actions { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin-top: 5px; }
       .preview { display: flex; justify-content: flex-end; align-items: flex-start; min-width: 0; padding-top: 4px; }
-      #pv { width: min(100%, calc((100svh - 80px) * 2 / 3)); aspect-ratio: 2 / 3; background: #fff; }
+      #pv { width: min(100%, calc((100svh - 80px) * 2 / 3)); aspect-ratio: 2 / 3; background: transparent; }
       #pv svg { display: block; width: 100%; height: 100%; }
       .advanced { border-top: 1px solid #aaa; padding: 28px 0 48px; }
       h2 { margin: 0 0 22px; font-size: 19px; font-weight: 400; }
@@ -87,6 +87,11 @@
             <label for="opened">Year Opened<input id="opened" type="number" inputmode="numeric"/></label>
             <label for="cn2">Capacity<input id="cn2" max="40000" min="30" type="number" inputmode="numeric"/></label>
           </div>
+          <label for="ticketPrice">Average Ticket Price ($)<span class="hint">Controls background band height in the gradient outline style: cheaper tickets keep the first bands low; higher prices make them taller (up to $200).</span><input id="ticketPrice" type="number" min="0" step="0.01" inputmode="decimal"/></label>
+          <div class="paired">
+            <label for="artistType">Artist Type<select id="artistType"><option value="local">Local</option><option value="touring">Touring</option><option value="mixed">Mixed</option></select></label>
+            <label for="independent">Independent<select id="independent"><option value="">Select…</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+          </div>
           <fieldset><legend>Venue Type</legend><div class="chips" id="type" role="group" aria-label="Venue type"></div></fieldset>
           <fieldset><legend>Genres <span class="hint">(pick 1–3)</span></legend><div class="chips" id="gen" role="group" aria-label="Genres"></div></fieldset>
           <label class="check"><input id="colorGrid" type="checkbox"/>Show grid, composition &amp; color placement</label>
@@ -98,6 +103,12 @@
               <option value="warped">Warped bands</option>
               <option value="screenprint">Flat screenprint</option>
               <option value="hybrid">Linear background + solid type</option>
+              <option value="anchored">Warped background + solid type</option>
+              <option value="bitmap">Sliced bands + solid type</option>
+              <option value="offset">Repeated offset outlines</option>
+              <option value="offsetGradient">Offset outlines + gradient background</option>
+              <option value="offsetFull">Offset outlines + full-bleed gradient</option>
+              <option value="graphic">Graphic lines + cuts</option>
             </select>
           </label>
           <label for="pack">Name Line Packing
@@ -109,8 +120,10 @@
             </select>
           </label>
           <div class="actions">
+            <button type="button" class="b" id="shuffleColors">Shuffle color placement</button>
             <button type="button" class="b" id="rnd">Randomize</button>
             <button type="button" class="b" id="svg">Download SVG</button>
+            <button type="button" class="b" id="png">Download PNG</button>
           </div>
         </aside>
         <main class="preview" aria-label="Postcard preview"><div id="pv"></div></main>
@@ -127,7 +140,7 @@
             </div>
             <p id="locationStatus" class="hint" role="status"></p>
             <p class="hint">Coordinates come from your neighborhood spreadsheet. Choose a suggested neighborhood; all venues in that neighborhood share its color anchor.</p>
-            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. All capacities have strong distortion and rough print edges. Higher capacity adds fragmentation, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Flat screenprint: first genre colors the name and frame, second colors the background, third colors the address. With one genre, the background is white; with two, the address matches the name. Linear background + solid type keeps these solid foreground colors and applies capacity-driven linear bands to the background. Genre colors and seed offset also affect similarity.</p>
+            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. All capacities have strong distortion and rough print edges. Higher capacity adds fragmentation, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Flat screenprint: first genre colors the name and frame, second colors the background, third colors the address. With one genre, the background is white; with two, the address matches the name. Linear background + solid type uses the first genre color for all text and the frame, and applies capacity-driven linear bands to the background. Warped background + solid type uses the same background as Warped bands, with the first genre color applied as solid lettering and frame on top. Graphic lines + cuts uses flat inks and tightly nested tunnel contours tailored to each venue type: capacity controls the number of horizontal cuts, with equal and opposite sideways shifts on either side of the centerline to preserve symmetry. Graphic mode uses two inks: the first genre colors lettering, frame, and graphic lines; the second colors the background. Years open increases graphic line thickness from 3 to 32 units over 1–200 years, with stronger changes in the early years. Repeated offset outlines uses the first genre color for type and border, the second for the background, and the third for repeated outline lines (falling back to the first when only one or two genres are selected). It uses capacity on a logarithmic scale: 30–40,000 people maps to 1–10 outline repetitions. Genre colors and seed offset also affect similarity.</p>
           </div>
           <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
         <label class="check">
@@ -157,7 +170,7 @@
           </span>
         </label>
         <label>
-          Grain
+          Grain (all color styles)
           <span class="row">
             <input id="grain" max="120" min="0" type="range"/>
           </span>
@@ -184,7 +197,7 @@
           <input accept=".otf,.ttf,.woff" id="f2" type="file"/>
         </label>
 
-          <div class="wide chips"><button type="button" class="b" id="rst">Reset</button><button type="button" class="b" id="png">Download PNG</button></div>
+          <div class="wide chips"><button type="button" class="b" id="hideFooter" aria-pressed="false">Hide lower text</button><button type="button" class="b" id="rst">Reset</button></div>
           <div class="wide msg" id="msg" role="status"></div>
           <div class="wide hint">Name length: <span id="cn"></span></div>
           <div class="wide">        <details>
@@ -244,7 +257,8 @@
       ['Bar', 1, 'bar'],
       ['Arena', 1, 'arena'],
       ['Third space', 1, 'thirdSpace'],
-      ['Outdoors', 1, 'outdoors']
+      ['Outdoors', 1, 'outdoors'],
+      ['Silly', 1, 'silly']
     ]; // [name, implemented, grid key]
     const GENRES = [
       ['pop', '#2f8cff'],
@@ -275,7 +289,7 @@
       genres: 'colors + gradient stops',
       type: 'grid',
       nameAddress: 'type in grid',
-      yearsOpen: 'serif height + footer opening year',
+      yearsOpen: 'serif height + graphic line thickness + footer opening year',
       capacity: 'gradient band count (1-5, log scale)'
     };
     /* Word indices: name 0–2, address 3–5. Grids may reorder or combine words.
@@ -425,6 +439,27 @@
           ];
         }
       },
+      silly: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        nameSlots: 4,
+        wordOrder: [[0, 1], [2, 3], [4, 5, 6]],
+        slots: g => {
+          // Every lower boundary is the next band's upper boundary.
+          const shift = Math.min(50, Math.max(0, (g - 1) * 35)),
+            boundaries = [
+              {y: 395, amplitude: 215, phase: .16},
+              {y: 750 + shift, amplitude: 215, phase: .16},
+              {y: 1105 + shift, amplitude: 215, phase: -.08},
+              {y: 1460, amplitude: 195, phase: -.055}
+            ];
+          return boundaries.slice(0, -1).map((top, i) => {
+            const bottom = boundaries[i + 1];
+            return {envelope: true, flowing: true, x: 90, y: top.y, w: 1020,
+              h: bottom.y - top.y, amplitude: top.amplitude, phase: top.phase,
+              bottomAmplitude: bottom.amplitude, bottomPhase: bottom.phase};
+          });
+        }
+      },
       outdoors: {
         frame: {x: 90, y: 75, w: 1020, h: 1640},
         wordOrder: [0, 2, 1, [3, 4, 5]],
@@ -434,8 +469,8 @@
             bottom = 1715 - 150 - second,
             bowl = {x: 90, w: 1020, depth: 150};
           return [
-            {wave: true, x: 90, y: 225, w: 1020, h: first, rise: 150},
-            {wave: true, x: 90, y: bottom, w: 1020, h: second, bowl},
+            {envelope: true, frameEdge: 'top', edgeY: 75, x: 90, y: 225, w: 1020, h: first, rise: 150},
+            {envelope: true, frameEdge: 'bottom', edgeY: 1715, x: 90, y: bottom, w: 1020, h: second, bowl},
             {wave: true, x: 230, y: bottom - third, w: 740, h: third, bowl},
             {wave: true, x: 330, y: bottom - third - address, w: 540, h: address, bowl}
           ];
@@ -476,6 +511,9 @@
       hood: "Union Square",
       years: YEAR - 1984,
       cap: 300,
+      ticketPrice: 30,
+      artistType: 'mixed',
+      independent: null,
       type: 0,
       genres: [3],
       seed: 0,
@@ -487,7 +525,8 @@
       pack: 1,
       swap: false,
       spread: 0,
-      slab: 0
+      slab: 0,
+      hideFooter: false
     };
     const PRESETS = [
       ['Stookey\'s Blue Room', DEF],
@@ -772,6 +811,9 @@
     // Warp the entire text band with a continuous vertical bow. Narrow vector
     // slices shear the original lettering instead of rotating individual glyphs.
     function waveOffset(slot, x) {
+      if (slot.flowing) {
+        return slot.amplitude * Math.cos(2 * Math.PI * (x / slot.w - slot.phase));
+      }
       if (slot.bowl) {
         const t = (slot.x + x - slot.bowl.x) / slot.bowl.w;
         return 4 * slot.bowl.depth * t * (1 - t);
@@ -786,10 +828,29 @@
         t = local / half;
       return slot.bottom - slot.y - 4 * slot.rise * t * (1 - t);
     }
+    // Keep the inner wave while stretching the outer edge to the frame.
+    function envelopeBounds(slot, x) {
+      if (slot.flowing) {
+        const constrain = offset => Math.max(slot.frameTop ?? -Infinity,
+          Math.min(slot.frameBottom ?? Infinity, slot.y + offset)) - slot.y;
+        return {
+          top: constrain(waveOffset(slot, x)),
+          bottom: constrain(slot.h + slot.bottomAmplitude *
+            Math.cos(2 * Math.PI * (x / slot.w - slot.bottomPhase)))
+        };
+      }
+      if (slot.frameEdge === 'top') {
+        return {top: slot.edgeY - slot.y, bottom: slot.h + waveOffset(slot, x)};
+      }
+      if (slot.frameEdge === 'bottom') {
+        return {top: waveOffset(slot, x), bottom: slot.edgeY - slot.y};
+      }
+      return {top: 0, bottom: envelopeHeight(slot, x)};
+    }
     function setWaveText(slot, text) {
       if (!text) return [];
       const source = setText({x: 0, y: 0, w: slot.w, h: slot.h, rot: 0}, text),
-        slices = slot.envelope ? 512 : 128,
+        slices = slot.envelope || slot.flowing ? 512 : 128,
         step = slot.w / slices;
       return [ex => {
         const id = `warp-${typeClipId++}`,
@@ -800,9 +861,10 @@
             slope = (y1 - y0) / step,
             intercept = y0 - slope * x0;
           clips.push(`<clipPath id="${id}-${i}" clipPathUnits="userSpaceOnUse"><rect x="${x0}" y="-2" width="${step + (i < slices - 1 ? 1.5 : 0)}" height="${slot.h + 4}"/></clipPath>`);
-          const matrix = slot.envelope ?
-            `1 0 0 ${envelopeHeight(slot, (x0 + x1) / 2) / slot.h} 0 0` :
-            `1 ${slope} 0 1 0 ${intercept}`;
+          const bounds = slot.envelope ? envelopeBounds(slot, (x0 + x1) / 2) : null,
+            matrix = bounds ?
+              `1 0 0 ${(bounds.bottom - bounds.top) / slot.h} 0 ${bounds.top}` :
+              `1 ${slope} 0 1 0 ${intercept}`;
           pieces.push(`<g transform="matrix(${matrix})"><g clip-path="url(#${id}-${i})"><use href="#${id}-source"/></g></g>`);
         }
         return `<g transform="translate(${slot.x} ${slot.y})"><defs><g id="${id}-source">${source.map(render => render(ex)).join('')}</g>${clips.join('')}</defs>${pieces.join('')}</g>`;
@@ -810,9 +872,27 @@
     }
     function slotGuide(slot) {
       const attrs = 'fill="none" stroke="#00a2ff" stroke-dasharray="8 6" stroke-width="2"';
+      if (slot.envelope && (slot.frameEdge || slot.flowing)) {
+        const points = Array.from({length: 65}, (_, i) => {
+          const x = slot.w * i / 64;
+          return {x: slot.x + x, ...envelopeBounds(slot, x)};
+        });
+        const outline = points.map(p => `${p.x} ${slot.y + p.top}`)
+          .concat(points.slice().reverse().map(p => `${p.x} ${slot.y + p.bottom}`));
+        return `<path d="M ${outline.join(' L ')} Z" ${attrs}/>`;
+      }
       if (slot.envelope) {
         const half = slot.w / 2, bottom = slot.bottom;
         return `<path d="M ${slot.x} ${slot.y} H ${slot.x+slot.w} V ${bottom} Q ${slot.x+half*1.5} ${bottom-2*slot.rise} ${slot.x+half} ${bottom} Q ${slot.x+half/2} ${bottom-2*slot.rise} ${slot.x} ${bottom} Z" ${attrs}/>`;
+      }
+      if (slot.wave && slot.flowing) {
+        return [0, slot.h].map(offset => {
+          const points = Array.from({length: 129}, (_, i) => {
+            const x = slot.w * i / 128;
+            return `${slot.x + x} ${slot.y + offset + waveOffset(slot, x)}`;
+          });
+          return `<path d="M ${points.join(' L ')}" ${attrs}/>`;
+        }).join('');
       }
       if (slot.wave) {
         const start = waveOffset(slot, 0), middle = waveOffset(slot, slot.w / 2),
@@ -831,6 +911,7 @@
     }
     // Align footer labels using font advance widths when exporting outlined text.
     function footer() {
+      if (S.hideFooter) return '';
       const grid = activeGrid(),
         y = grid.footerY ? grid.footerY(typeGrowth()) : CFG.footerY,
         sz = CFG.footerSize,
@@ -917,11 +998,174 @@
       const seed = 48271 + S.seed;
       const random = prng(seed + variant * 7919);
       const density = Math.max(0, Math.min(1, tFromCap(S.cap) / 1000));
-      if (S.colorStyle === 'warped') {
+      if (S.colorStyle === 'bitmap') {
+        // Cut the layered field into thin vertical strips with staggered registration.
+        // Continuous segments preserve the flowing image across paper gutters.
+        const cell = density < .34 ? 30 : density < .67 ? 24 : 20,
+          base = colors.length > 1 ? colors.slice(1) : [colors[0]],
+          palette = [...base, ...base.map(c => tint(c, .38)),
+            ...base.map(c => tint(c, .7)), '#ffffff'],
+          phase = S.seed * .31,
+          hash2 = (x, y) => {
+            const n = Math.sin(x * 127.1 + y * 311.7 + seed * .17) * 43758.5453;
+            return n - Math.floor(n);
+          },
+          noise = (x, y) => {
+            const ix = Math.floor(x), iy = Math.floor(y),
+              fx = x - ix, fy = y - iy,
+              u = fx * fx * (3 - 2 * fx), v = fy * fy * (3 - 2 * fy),
+              top = hash2(ix, iy) * (1 - u) + hash2(ix + 1, iy) * u,
+              bottom = hash2(ix, iy + 1) * (1 - u) + hash2(ix + 1, iy + 1) * u;
+            return top * (1 - v) + bottom * v;
+          },
+          fractal = (x, y) => noise(x, y) * .57 +
+            noise(x * 2, y * 2) * .28 + noise(x * 4, y * 4) * .15,
+          pockets = Array.from({length: 7}, () => {
+            const angle = random() * Math.PI * 2, distance = 120 + random() * 600;
+            return {x: Math.cos(angle) * distance, y: Math.sin(angle) * distance,
+              radius: 110 + random() * 250, strength: (random() - .35) * 1.8};
+          }),
+          colorAt = (x, y) => {
+            const dx = x - point.x, dy = y - point.y,
+              flowX = fractal(dx / 320 + phase, dy / 340) - .5,
+              flowY = fractal(dx / 370 + 17, dy / 300 - phase) - .5,
+              warp = 900 + density * 650,
+              wx = dx + flowX * warp, wy = dy + flowY * warp,
+              radius = Math.hypot(wx, wy * .85),
+              folds = fractal(wx / 105, wy / 125),
+              pooling = pockets.reduce((sum, p) => sum + p.strength *
+                Math.exp(-((wx - p.x) ** 2 + (wy - p.y) ** 2) / (p.radius ** 2)), 0),
+              field = radius / (185 - density * 45) + folds * 1.2 + pooling * 2,
+              band = Math.floor(field);
+            return palette[((band % palette.length) + palette.length) % palette.length];
+          },
+          slices = [];
+        for (let x = 0; x < 1200; x += cell) {
+          const column = Math.round(x / cell),
+            // Alternate registrations produce a cut-and-reassembled print rhythm.
+            shift = (column % 3 - 1) * (35 + density * 55) +
+              22 * Math.sin(column * .73 + phase),
+            width = cell * (.7 + .1 * Math.sin(column * 1.7 + phase)),
+            sample = y => colorAt(x + cell / 2, y + shift);
+          let start = 0, ink = sample(0);
+          for (let y = 4; y <= 1800; y += 4) {
+            const next = y < 1800 ? sample(y) : null;
+            if (next !== ink) {
+              const shape = `x="${x}" y="${start}" width="${width.toFixed(2)}" height="${y - start}"`;
+              slices.push(`<rect ${shape} fill="${ink}"/>`);
+              start = y;
+              ink = next;
+            }
+          }
+        }
+        colorPlacement.push(`<text x="40" y="1740" fill="#00dfff" font-size="25">Neighborhood origin · staggered vertical slices</text>`);
+        return `<pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="#fffdf5"/>${slices.join('')}</pattern>`;
+      }
+      if (S.colorStyle === 'graphic') {
+        const background = colors[1] || '#ffffff',
+          ink = colors[0],
+          count = 20,
+          type = VENUE_TYPES[S.type]?.[2] || 'club',
+          grid = activeGrid(), frame = grid.frame,
+          slots = grid.slots(typeGrowth()),
+          // A square-root curve makes differences visible for younger venues too.
+          weight = 3 + 29 * Math.sqrt((Math.min(200, Math.max(1, S.years)) - 1) / 199);
+        // Closely nested contours compress toward a vanishing point, like a
+        // psychedelic poster tunnel. Capacity changes the cuts, not the tunnel.
+        const contours = Array.from({length: count}, (_, i) => {
+          const scale = Math.pow(.875, i),
+            w = (frame.w - 36) * scale, h = (frame.h - 36) * scale,
+            x = frame.x + (frame.w - w) / 2,
+            y = frame.y + (frame.h - h) / 2,
+            cx = x + w / 2, cy = y + h / 2;
+          switch (type) {
+            case 'club': {
+              const side = slots[1], start = side.y + side.h + 35,
+                outerBottom = frame.y + frame.h - 190,
+                available = outerBottom - start,
+                tunnelW = (frame.w - 50) * scale,
+                tunnelH = available * scale,
+                left = frame.x + (frame.w - tunnelW) / 2,
+                top = start + (available - tunnelH) / 2;
+              return available > 0 ? `<rect x="${left}" y="${top}" width="${tunnelW}" height="${tunnelH}" rx="${Math.min(26*scale, tunnelH/8)}"/>` : '';
+            }
+            case 'bar': {
+              const address = slots[3],
+                top = address.y + address.h + 30,
+                bottom = slots[0].y - 30,
+                lineY = top + (bottom - top) * (i + .5) / count;
+              return bottom > top ? `<path d="M ${frame.x} ${lineY} H ${frame.x+frame.w}"/>` : '';
+            }
+            case 'nightClub':
+              return `<path d="M ${cx} ${y} L ${x+w} ${cy} L ${cx} ${y+h} L ${x} ${cy} Z"/>`;
+            case 'concertHall':
+              return `<path d="M ${x} ${y+h} V ${y+w*.5} A ${w/2} ${w/2} 0 0 1 ${x+w} ${y+w*.5} V ${y+h}"/>`;
+            case 'arena': {
+              const radius = 490 * scale,
+                straight = 465 * scale,
+                upper = 817.5 - straight / 2, lower = 817.5 + straight / 2;
+              return `<path d="M ${600-radius} ${upper} A ${radius} ${radius} 0 0 1 ${600+radius} ${upper} V ${lower} A ${radius} ${radius} 0 0 1 ${600-radius} ${lower} Z"/>`;
+            }
+            case 'thirdSpace':
+              return `<path d="M ${x} ${y+h} V ${y+h*.25} L ${cx} ${y} L ${x+w} ${y+h*.25} V ${y+h}"/>`;
+            case 'outdoors': {
+              // Evenly spaced semicircular seating tiers share a stage center.
+              // Outer tiers extend past the sides and are cropped by the frame.
+              const stageX = frame.x + frame.w / 2,
+                stageY = 510,
+                radius = 150 + i * 38;
+              return `<path d="M ${stageX-radius} ${stageY} A ${radius} ${radius} 0 0 0 ${stageX+radius} ${stageY}"/>`;
+            }
+            case 'silly':
+              return `<path d="M ${x} ${y+h*.72} Q ${x+w*.22} ${y-h*.25} ${cx} ${y+h*.35} T ${x+w} ${y+h*.2} M ${x} ${y+h*.88} Q ${cx} ${y+h*.45} ${x+w} ${y+h*.88}"/>`;
+            default:
+              return `<rect x="${x}" y="${y}" width="${w}" height="${h}"/>`;
+          }
+        }).join('');
+        // Split at the frame center and shift each half by equal, opposite
+        // amounts. Horizontal bands alternate between intact and expanded,
+        // preserving quadrant symmetry. Mirror the bands around the motif's
+        // actual center, including the lower club tunnel and stadium center.
+        const halfCount = 2 + Math.round(24 * density),
+          centerY = type === 'outdoors' ? 510 : type === 'arena' ? 817.5 : type === 'club' ?
+            (slots[1].y + slots[1].h + 35 + frame.y + frame.h - 190) / 2 :
+            frame.y + frame.h / 2,
+          halfSpan = Math.max(centerY, 1800 - centerY),
+          heights = [halfSpan];
+        // Add cuts inside the widest remaining bands. Existing boundaries stay
+        // in place as capacity rises; broad blocks progressively fragment.
+        while (heights.length < halfCount) {
+          const widest = heights.indexOf(Math.max(...heights)),
+            height = heights[widest],
+            ratio = .28 + random() * .44;
+          heights.splice(widest, 1, height * ratio, height * (1 - ratio));
+        }
+        const upperBands = heights.map((height, i) => ({
+            height, dx: i % 2 ? 32 : 0
+          })),
+          bands = [...upperBands, ...upperBands.slice().reverse()],
+          clips = [], pieces = [],
+          centerX = frame.x + frame.w / 2;
+        clips.push(`<clipPath id="${id}-half-left"><rect x="0" y="0" width="${centerX}" height="1800"/></clipPath>`,
+          `<clipPath id="${id}-half-right"><rect x="${centerX}" y="0" width="${1200-centerX}" height="1800"/></clipPath>`);
+        let sliceY = centerY - halfSpan;
+        for (let i = 0; i < bands.length; i++) {
+          const {height, dx} = bands[i];
+          clips.push(`<clipPath id="${id}-slice-${i}"><rect x="0" y="${sliceY}" width="1200" height="${height+.25}"/></clipPath>`);
+          const shape = `<g transform="translate(${-dx} 0)"><g clip-path="url(#${id}-half-left)"><use href="#${id}-contours"/></g></g><g transform="translate(${dx} 0)"><g clip-path="url(#${id}-half-right)"><use href="#${id}-contours"/></g></g>`;
+          pieces.push(`<g clip-path="url(#${id}-slice-${i})">${shape}</g>`);
+          sliceY += height;
+        }
+        return `<defs><g id="${id}-contours" fill="none" stroke="currentColor" stroke-width="${weight}" stroke-linejoin="round" stroke-linecap="butt">${contours}</g>${clips.join('')}<g id="${id}-print-lines">${pieces.join('')}</g></defs>
+          <pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="${background}"/><use href="#${id}-print-lines" color="${ink}"/></pattern>`;
+      }
+
+      if (S.colorStyle === 'warped' || S.colorStyle === 'anchored') {
         // A concentrated source feeds a distorted plume. Capacity changes the flow,
         // secondary pigment pockets and their contrast, with only modest repetition.
-        const energy = .3 + .7 * Math.pow(density, 1.35);
-        const chaos = 650 + 650 * Math.pow(density, 1.2);
+        const solidOverlay = S.colorStyle === 'anchored';
+        const energy = (.3 + .7 * Math.pow(density, 1.35)) * (solidOverlay ? .3 : 1);
+        const chaos = (650 + 650 * Math.pow(density, 1.2)) * (solidOverlay ? .7 : 1);
         const radius = 720 + density * 360;
         const palette = [...colors, tint(colors[0], .72)];
         const stops = [[colors[0], 0], [colors[0], .09]];
@@ -935,10 +1179,15 @@
         });
         const radial = (name, x, y, r, content) =>
           `<radialGradient id="${name}" gradientUnits="userSpaceOnUse" cx="${x}" cy="${y}" r="${r}">${content}</radialGradient>`;
+        const inkStops = solidOverlay ? stops.flatMap(([color, end], i) => {
+          if (!i) return [[color, end]];
+          const [previous, start] = stops[i - 1];
+          return [[previous, start + (end - start) * .65], [color, end]];
+        }) : stops;
         let defs = radial(id+'-ink', point.x, point.y, radius,
-          stops.map(([c,o])=>`<stop offset="${o}" stop-color="${c}"/>`).join(''));
+          inkStops.map(([c,o])=>`<stop offset="${o}" stop-color="${c}"/>`).join(''));
         defs += radial(id+'-fade', point.x, point.y, radius*1.25,
-          '<stop stop-color="white"/><stop offset=".3" stop-color="white"/><stop offset="1" stop-color="white" stop-opacity="0"/>');
+          `<stop stop-color="white"/><stop offset="${solidOverlay ? .65 : .3}" stop-color="white"/><stop offset="1" stop-color="white" stop-opacity="0"/>`);
         defs += radial(id+'-core', point.x, point.y, 160 + density*90,
           `<stop stop-color="${colors[0]}" stop-opacity=".9"/><stop offset="1" stop-color="${colors[0]}" stop-opacity="0"/>`);
         let pockets = '';
@@ -966,7 +1215,7 @@
               <feFuncR type="discrete" tableValues=".1 .25 .4 .5 .6 .75 .9"/>
               <feFuncG type="discrete" tableValues=".1 .25 .4 .5 .6 .75 .9"/>
             </feComponentTransfer>
-            <feDisplacementMap in="folded" in2="torn" scale="${85+density*220}" xChannelSelector="G" yChannelSelector="R"/>
+            <feDisplacementMap in="folded" in2="torn" scale="${(85+density*220) * (solidOverlay ? .25 : 1)}" xChannelSelector="G" yChannelSelector="R"/>
           </filter>
           <pattern id="${id}" patternUnits="userSpaceOnUse" width="1200" height="1800"><rect width="1200" height="1800" fill="${tint(colors[0], .92)}"/><g filter="url(#${id}-warp)"><g mask="url(#${id}-plume)"><rect x="-600" y="-600" width="2400" height="3000" fill="url(#${id}-ink)"/>${pockets}</g></g><rect width="1200" height="1800" fill="url(#${id}-core)"/></pattern>`;
       }
@@ -990,7 +1239,8 @@
       thirdSpace: 'Three name bands grow downward in height and stay anchored to the bottom; address sits above.',
       arena: 'Full venue name repeats on the inner upper and lower arcs; address follows the outer arcs.',
       concertHall: 'Four name slots form two columns of waves; address spans the top envelope.',
-      outdoors: 'Name follows the upper wave and lower bowl; address sits above the lower name bands.'
+      silly: 'Paired name words and the address fill three flush wave bands; adjacent layers share the same boundary curve.',
+      outdoors: 'First and third name words stretch from the inner waves to the top and bottom frame edges; address sits above the lower name bands.'
     };
     function compositionOverlay() {
       const grid = activeGrid(), f = grid.frame, slots = grid.slots(typeGrowth());
@@ -1065,6 +1315,31 @@
       const cols = (S.genres.length ? S.genres : [3]).map(i => GENRES[i][1]),
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
+      const hasOffset = ['offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle);
+      const solidTypeColor = ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .22) : cols[0];
+      const offsetCount = 1 + Math.floor(9 * Math.max(0, Math.min(1, tFromCap(S.cap) / 1000))),
+        offsetLayers = hasOffset ? Array.from({length: offsetCount}, (_, i) => offsetCount - i) : [],
+        offsetDefs = offsetLayers.flatMap(i => [
+          [i * 12, ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0], `offset-${i}-ink`],
+          [i * 12 - 3, cols[1] || '#fffdf5', `offset-${i}-gap`]
+        ]).map(([radius, color, id]) => `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
+        offsetArtwork = offsetLayers.map(i => `<use href="#artwork-shape" filter="url(#offset-${i}-ink)"/>` +
+          (['offsetGradient', 'offsetFull'].includes(S.colorStyle) ?
+            `<rect width="1200" height="1800" fill="url(#offset-background)" mask="url(#offset-gap-${i})"/>` :
+            `<use href="#artwork-shape" filter="url(#offset-${i}-gap)"/>`)).join('');
+      // Stack genre bands upward from the bottom. Price changes their height,
+      // never their count; the last color fills the remaining space above.
+      const gradientPalette = cols.length > 1 ? cols : [cols[0], tint(cols[0], .85)],
+        ticketScale = Math.min(1, Math.max(0, S.ticketPrice || 0) / 200),
+        bandHeight = .12 + .30 * ticketScale,
+        blendWidth = bandHeight * .45,
+        priceStops = [[gradientPalette[0], 0]];
+      for (let i = 1; i < gradientPalette.length; i++) {
+        const boundary = bandHeight * i;
+        priceStops.push([gradientPalette[i - 1], boundary - blendWidth],
+          [gradientPalette[i], boundary + blendWidth]);
+      }
+      priceStops.push([gradientPalette[gradientPalette.length - 1], 1]);
       // FIELD: genre colors repeated per capacity band; the spread slider randomizes band sizes
 
 
@@ -1091,8 +1366,13 @@
         borderShape = `<path fill-rule="evenodd" d="M ${kl} ${kl} H ${1200-kl} V ${1800-kl} H ${kl} Z M ${f.x} ${f.y} H ${f.x+f.w} V ${f.y+f.h} H ${f.x} Z"/>`,
         guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in" style="isolation:isolate"><defs>
-    ${S.colorStyle === 'screenprint' ? '' : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
+    <clipPath id="postcard-edge"><rect width="1200" height="1800" rx="0"/></clipPath>
+    ${['screenprint', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? '' : ['graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? colorField('B',cols,B,f.y,f.y+f.h,0) : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
+    <filter id="print-noise" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" seed="${S.seed + 1}" stitchTiles="stitch"/>
+      <feColorMatrix type="saturate" values="0"/>
+    </filter>
     <clipPath id="cd"><rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}"/></clipPath>
     <clipPath id="fr"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></clipPath>
     <!-- Close subpixel slice gaps before outlining and filling the shared silhouette. -->
@@ -1106,23 +1386,32 @@
       <feFlood flood-color="${k}" result="outline-ink"/>
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
+    ${offsetDefs}
+    ${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
+      priceStops) +
+      offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape" filter="url(#offset-${i}-gap)"/></mask>`).join('') : ''}
     <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
-    <rect width="1200" height="1800" fill="#fff"/>
-    ${S.colorStyle === 'screenprint' || S.colorStyle === 'hybrid' ? `
-      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${S.colorStyle === 'hybrid' ? 'url(#B)' : cols[1] || '#fff'}"/>
-      <use href="#artwork-shape" filter="url(#type-outline)"/>
-      <g mask="url(#lt)"><rect width="1200" height="1800" fill="${cols[0]}"/></g>
-      ${items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('')}
+    <g clip-path="url(#postcard-edge)">
+    <rect width="1200" height="1800" fill="${S.colorStyle === 'offsetFull' ? 'url(#offset-background)' : '#fff'}"/>
+    <g>
+    ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? `
+      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
+      <g mask="url(#lt)"><rect width="1200" height="1800" fill="${solidTypeColor}"/></g>
+      ${S.colorStyle === 'screenprint' ? items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('') : ''}
     ` : `
       <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
       <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
-      <use href="#artwork-shape" filter="url(#type-outline)"/>
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     `}
+    </g>
+    ${S.independent === true ? `<rect x="${kl + 3}" y="${kl + 3}" width="${1200 - 2 * kl - 6}" height="${1800 - 2 * kl - 6}" fill="none" stroke="${cols[1] || tint(cols[0], .65)}" stroke-width="4" pointer-events="none"/>` : ''}
     ${footer()}
+    ${S.grain > 0 ? `<g clip-path="url(#cd)" pointer-events="none" style="mix-blend-mode:multiply" opacity="${Math.min(120, Math.max(0, S.grain)) / 120 * .28}"><rect width="1200" height="1800" filter="url(#print-noise)"/></g>` : ''}
     ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.7" style="mix-blend-mode:screen"/>` : ''}
-    ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}</svg>`;
+    ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}</g></svg>`;
     }
 
     /* ================= UI ================= */
@@ -1165,6 +1454,9 @@
       $('yr').value = $('yn').value = S.years;
       $('cr').value = tFromCap(S.cap);
       $('cn2').value = S.cap;
+      $('ticketPrice').value = S.ticketPrice;
+      $('artistType').value = S.artistType;
+      $('independent').value = S.independent === null ? '' : S.independent ? 'yes' : 'no';
       [...$('type').children].forEach((button, i) => {
         button.classList.toggle('on', i === S.type);
         button.setAttribute('aria-pressed', String(i === S.type));
@@ -1179,6 +1471,10 @@
       $('slab').value = S.slab;
       $('slv').textContent = S.slab;
       $('swap').checked = S.swap;
+      $('hideFooter').textContent = S.hideFooter ? 'Show lower text' : 'Hide lower text';
+      $('hideFooter').setAttribute('aria-pressed', String(S.hideFooter));
+      $('shuffleColors').disabled = S.genres.length < 2;
+      $('shuffleColors').title = S.genres.length < 2 ? 'Select at least two genres to swap color placement.' : 'Reassign the selected colors to different parts of the postcard.';
       [...$('gen').children].forEach((b, i) => {
         b.classList.toggle('on', S.genres.includes(i));
         b.setAttribute('aria-pressed', String(S.genres.includes(i)));
@@ -1235,6 +1531,8 @@
     bind('addr', e => S.addr = e.value);
     bind('hood', e => { S.hood = e.value; updateNeighborhoodCoordinates(); });
     bind('colorStyle', e => S.colorStyle = e.value);
+    bind('artistType', e => S.artistType = e.value);
+    bind('independent', e => S.independent = e.value === '' ? null : e.value === 'yes');
     bind('colorGrid', () => {});
     bind('yr', e => {
       S.years = +e.value;
@@ -1249,6 +1547,9 @@
     bind('cr', e => {
       S.cap = capFromT(+e.value);
       $('cn2').value = S.cap
+    });
+    bind('ticketPrice', e => {
+      S.ticketPrice = Math.max(0, Number.isFinite(e.valueAsNumber) ? e.valueAsNumber : 0);
     });
     bind('cn2', e => {
       S.cap = Math.min(40000, Math.max(30, +e.value || 30));
@@ -1272,7 +1573,25 @@
       $('slv').textContent = S.slab
     });
     bind('swap', e => S.swap = e.checked);
+    $('hideFooter').onclick = () => {
+      S.hideFooter = !S.hideFooter;
+      sync();
+      draw();
+    };
     $('rst').onclick = () => load(DEF);
+    $('shuffleColors').onclick = () => {
+      if (S.genres.length < 2) return;
+      const original = [...S.genres], shuffled = [...original];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      // Every click changes the assignment, even if the shuffle kept its order.
+      S.genres = shuffled.every((genre, i) => genre === original[i]) ?
+        [...original.slice(1), original[0]] : shuffled;
+      sync();
+      draw();
+    };
     $('rnd').onclick = () => {
       const r = RAND[Math.random() * RAND.length | 0],
         g = [];
@@ -1316,7 +1635,8 @@
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = (S.name.replace(/\W+/g, '-') || 'postcard') + '.' + ext;
-      a.click()
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     };
     // Validated snapshot of data/Neighborhood Locations  - Sheet1.csv.
     // Embedded so neighborhood lookup also works when index.html is opened directly.
@@ -1555,24 +1875,53 @@
         })),
         im = new Image();
       im.onload = () => {
-        const c = document.createElement('canvas');
-        c.width = 1200;
-        c.height = 1800;
-        c.getContext('2d').drawImage(im, 0, 0, 1200, 1800);
-        c.toBlob(b => save(b, 'png'))
+        try {
+          const c = document.createElement('canvas');
+          c.width = 1200;
+          c.height = 1800;
+          c.getContext('2d').drawImage(im, 0, 0, 1200, 1800);
+          c.toBlob(b => {
+            if (b) save(b, 'png');
+            else { err = 'Could not create the PNG. Please try again.'; msgs(); }
+          }, 'image/png');
+        } catch {
+          err = 'Could not export the PNG. Please try again.';
+          msgs();
+        } finally {
+          URL.revokeObjectURL(u);
+        }
+      };
+      im.onerror = () => {
+        URL.revokeObjectURL(u);
+        err = 'Could not render the postcard for PNG export. Please try again.';
+        msgs();
       };
       im.src = u
     };
-    // The Adobe Fonts face is rendered as live SVG text unless a font file is uploaded.
-    // Do not initialize DF with another font: paths would override the hosted Manicotti face.
+    // Load the local licensed display font so exported lettering is portable paths.
+    async function loadLocalDisplayFont() {
+      try {
+        const response = await fetch('fonts/manicotti-regular-testing.otf');
+        if (!response.ok) throw new Error('Font unavailable');
+        const font = opentype.parse(await response.arrayBuffer());
+        // Preserve a font uploaded while the automatic load was in progress.
+        if (!DF) DF = font;
+        if (err.includes('Adobe Fonts Manicotti') || err.includes('Manicotti did not load')) err = '';
+        draw();
+      } catch {
+        // Direct file:// access may block fetch; the upload control remains available.
+        draw();
+      }
+    }
+    loadLocalDisplayFont();
     Promise.all([document.fonts.load('400 100px manicotti'),
       document.fonts.load('400 40px "Roboto Condensed"')]).then(([fonts]) => {
-      if (!fonts.length) {
+      if (!fonts.length && !DF) {
         err = 'Manicotti did not load from Adobe Fonts. Check your connection or upload the font file.';
       }
       draw();
     }).catch(() => {
-      err = 'Could not load Adobe Fonts Manicotti. Upload the font file to use it locally.';
+      if (!DF) err = 'Could not load Adobe Fonts Manicotti. Upload the font file to use it locally.';
       draw();
     });
     sync();
