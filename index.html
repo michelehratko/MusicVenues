@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&amp;family=Roboto+Condensed:wght@400&amp;family=Rubik+Mono+One&amp;display=swap" rel="stylesheet"/>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/opentype.js/1.3.4/opentype.min.js">
     </script>
+    <script src="src/clipper.js"></script>
+    <script src="src/vectorOffsets.js"></script>
     <style>
       :root { color-scheme: light; --bg: #dedede; --tx: #202020; --mu: #666; --bd: #888; }
       * { box-sizing: border-box; }
@@ -111,6 +113,8 @@
               <option value="graphic">Graphic lines + cuts</option>
             </select>
           </label>
+          <label class="check"><input id="vectorOutlines" type="checkbox"/>Use vector outlines</label>
+          <p class="hint">For offset outline styles. Turn off to use the original filter outlines.</p>
           <label for="pack">Name Line Packing
             <select id="pack">
               <option value="0">Spread out (one word per slot)</option>
@@ -197,7 +201,7 @@
           <input accept=".otf,.ttf,.woff" id="f2" type="file"/>
         </label>
 
-          <div class="wide chips"><button type="button" class="b" id="hideFooter" aria-pressed="false">Hide lower text</button><button type="button" class="b" id="rst">Reset</button></div>
+          <div class="wide chips"><button type="button" class="b" id="hideFooter" aria-pressed="true">Show lower text</button><button type="button" class="b" id="rst">Reset</button></div>
           <div class="wide msg" id="msg" role="status"></div>
           <div class="wide hint">Name length: <span id="cn"></span></div>
           <div class="wide">        <details>
@@ -258,7 +262,10 @@
       ['Arena', 1, 'arena'],
       ['Third space', 1, 'thirdSpace'],
       ['Outdoors', 1, 'outdoors'],
-      ['Silly', 1, 'silly']
+      ['Silly', 1, 'silly'],
+      ['Third space v2', 1, 'thirdSpaceV2'],
+      ['Arena v2', 1, 'arenaV2'],
+      ['Arena v3', 1, 'arenaV3']
     ]; // [name, implemented, grid key]
     const GENRES = [
       ['pop', '#2f8cff'],
@@ -386,11 +393,8 @@
       thirdSpace: {
         frame: {x: 90, y: 75, w: 1020, h: 1640},
         wordOrder: [0, 1, 2, [3, 4, 5]],
-        // Keep the stepped-height name stack anchored to the bottom frame edge.
         slots: g => {
-          const first = 110 * g,
-            second = 190 * g,
-            third = 250 * g,
+          const first = 110 * g, second = 190 * g, third = 250 * g,
             top = 1715 - first - second - third;
           return [
             {x: 90, y: top, w: 1020, h: first, rot: 0},
@@ -400,8 +404,40 @@
               naturalLength: true, align: 'center'}
           ];
         },
-        // Metadata stays in the open field above the bottom-anchored lettering.
         footerY: g => 1715 - 550 * g - 40
+      },
+      thirdSpaceV2: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        wordOrder: [0, 1, 2, [3, 4, 5]],
+        // Three shared wavy envelopes keep the growing stack bottom-anchored.
+        slots: g => {
+          const first = 190 * g,
+            second = 290 * g,
+            third = 170 * g,
+            top = 1715 - first - second - third,
+            upperWave = [[0,-.62],[.16,-1],[.68,1],[1,-.05]],
+            lowerWave = [[0,.2],[.36,-1],[.88,1],[1,.75]],
+            boundaries = [
+              {y: top, amplitude: 78*g, profile: upperWave},
+              {y: top + first, amplitude: 110*g, profile: upperWave},
+              {y: top + first + second, amplitude: 95*g, profile: lowerWave},
+              {y: 1715, amplitude: 0, phase: 0}
+            ],
+            names = boundaries.slice(0, -1).map((upper, i) => {
+              const lower = boundaries[i+1];
+              return {envelope: true, flowing: true, x: 90, y: upper.y, w: 1020,
+                h: lower.y-upper.y, amplitude: upper.amplitude, phase: upper.phase || 0, profile: upper.profile,
+                bottomAmplitude: lower.amplitude, bottomPhase: lower.phase || 0, bottomProfile: lower.profile,
+                frameTop: 75, frameBottom: 1715};
+            });
+          return [
+            ...names,
+            {x: 200, y: 75, w: 800, h: 90 * g, rot: 0,
+              naturalLength: true, align: 'center'}
+          ];
+        },
+        // Metadata stays in the open field above the bottom-anchored lettering.
+        footerY: g => 1715 - 728 * g - 40
       },
       arena: {
         frame: {x: 90, y: 75, w: 1020, h: 1640},
@@ -418,6 +454,49 @@
             {radial: 'bottom', radius: nameRadius, h: nameBand, fullName: true},
             {radial: 'top', radius: addressRadius, h: addressBand, pathAlign: 'side-center', startY: (585 + 1050) / 2},
             {radial: 'bottom', radius: addressRadius, h: addressBand, pathAlign: 'side-center', startY: (585 + 1050) / 2, reverse: true}
+          ];
+        }
+      },
+      arenaV2: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        nameSlots: 2,
+        wordOrder: [0, 1, 2, [3, 4]],
+        slots: g => {
+          const radius = 510, band = 130*g, innerRadius = radius-band,
+            upperCenter = 775, lowerCenter = 1015,
+            titleX = 90, titleWidth = 1020,
+            addressBand = 70*g, addressRadius = radius-40*g-addressBand/2;
+          return [
+            {envelope: true, stadiumCap: 'top', outsideStadium: true,
+              x: titleX, y: 75, w: titleWidth, h: upperCenter-radius-75,
+              radius, innerRadius, centerY: upperCenter},
+            {envelope: true, stadiumCap: 'bottom', outsideStadium: true,
+              x: titleX, y: lowerCenter+radius, w: titleWidth, h: 1715-lowerCenter-radius,
+              radius, innerRadius, centerY: lowerCenter},
+            {radial: 'top', radius: addressRadius, h: addressBand, pathAlign: 'side-center',
+              upperCenter, lowerCenter, startY: 895},
+            {radial: 'bottom', radius: addressRadius, h: addressBand, pathAlign: 'side-center',
+              upperCenter, lowerCenter, startY: 895, reverse: true}
+          ];
+        }
+      },
+      arenaV3: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        nameSlots: 2,
+        wordOrder: [0, 1, 2, [3, 4]],
+        slots: g => {
+          const radius = 510, band = 130*g, innerRadius = radius-band,
+            upperCenter = 775, lowerCenter = 1015,
+            titleX = 600-innerRadius, titleWidth = 2*innerRadius;
+          return [
+            {envelope: true, stadiumCap: 'top', outsideStadium: true,
+              x: titleX, y: 75, w: titleWidth, h: upperCenter-radius-75,
+              radius, innerRadius, centerY: upperCenter},
+            {envelope: true, stadiumCap: 'bottom', outsideStadium: true,
+              x: titleX, y: lowerCenter+radius, w: titleWidth, h: 1715-lowerCenter-radius,
+              radius, innerRadius, centerY: lowerCenter},
+            {x: 90, y: 655, w: band*.85, h: 480, rot: -90, sharedAddress: true, align: 'center'},
+            {x: 1110-band*.85, y: 655, w: band*.85, h: 480, rot: 90, sharedAddress: true, align: 'center'}
           ];
         }
       },
@@ -519,6 +598,7 @@
       seed: 0,
       grain: 60,
       colorStyle: "screenprint",
+      vectorOutlines: true,
       latitude: null,
       longitude: null,
       guides: false,
@@ -526,7 +606,7 @@
       swap: false,
       spread: 0,
       slab: 0,
-      hideFooter: false
+      hideFooter: true
     };
     const PRESETS = [
       ['Stookey\'s Blue Room', DEF],
@@ -621,13 +701,21 @@
     })));
 
     /* ================= TYPE LAYOUT ================= */
-    // Share the slab growth between type sizing and grid geometry.
-    const yearSlabGrowth = () => 210 * (Math.min(200, Math.max(1, S.years)) - 1) / 199;
+    // Share the expanded serif range between type sizing and grid geometry:
+    // young venues compress the serifs; older venues stretch them farther.
+    const yearSlabGrowth = () => -75 + 405 * (Math.min(200, Math.max(1, S.years)) - 1) / 199;
     const slabGrowth = () => S.slab + yearSlabGrowth();
     const typeGrowth = () => (700 + 2 * slabGrowth()) / 700;
     let typeClipId = 0;
     // Fit the cross-axis to the band; natural-length grids only condense on overflow.
     function textFit(slot, x0, x1, y0, y1) {
+      if (slot.sharedFit) {
+        const length = slot.rot ? slot.h : slot.w,
+          thickness = slot.rot ? slot.w : slot.h,
+          scale = Math.min(length/slot.sharedFit.width, thickness/slot.sharedFit.height),
+          offset = (length-(x1-x0)*scale)/2;
+        return `translate(${offset} 0) scale(${scale} ${scale}) translate(${-x0} ${-slot.sharedFit.top})`;
+      }
       const length = slot.rot ? slot.h : slot.w,
         thickness = slot.rot ? slot.w : slot.h,
         width = x1 - x0 || 1,
@@ -637,6 +725,67 @@
         offset = slot.align === 'center' ? (length - width * sx) / 2 :
           slot.naturalLength && slot.rot < 0 ? length - width * sx : 0;
       return `translate(${offset} 0) scale(${sx} ${sy}) translate(${-x0} ${-y0})`;
+    }
+    // Follow font curves closely in postcard units; retain the original straight edges.
+    function fontOutlinePath(commands, sx, sy) {
+      const tolerance = .25, contours = [];
+      let points = [], current;
+      const scaled = (x, y) => ({x: x * sx, y: y * sy});
+      const distance = (p, a, b) => {
+        const dx = b.x - a.x, dy = b.y - a.y;
+        const t = Math.max(0, Math.min(1,
+          ((p.x-a.x)*dx + (p.y-a.y)*dy) / (dx*dx + dy*dy || 1)));
+        return Math.hypot(p.x-a.x-t*dx, p.y-a.y-t*dy);
+      };
+      const simplify = list => {
+        if (list.length <= 2) return list;
+        let index = 0, max = tolerance;
+        for (let i = 1; i < list.length-1; i++) {
+          const d = distance(list[i], list[0], list[list.length-1]);
+          if (d > max) { max = d; index = i; }
+        }
+        return index ? simplify(list.slice(0, index+1)).slice(0, -1)
+          .concat(simplify(list.slice(index))) : [list[0], list[list.length-1]];
+      };
+      const finish = () => {
+        if (points.length < 3) { points = []; return; }
+        // Split a closed ring at its farthest vertex to preserve both sides.
+        let split = 1;
+        for (let i = 2; i < points.length; i++) {
+          if (Math.hypot(points[i].x-points[0].x, points[i].y-points[0].y) >
+              Math.hypot(points[split].x-points[0].x, points[split].y-points[0].y)) split = i;
+        }
+        const ring = simplify(points.slice(0, split+1)).slice(0, -1)
+          .concat(simplify(points.slice(split).concat(points[0])).slice(0, -1));
+        contours.push('M ' + ring.map(p => `${(p.x/sx).toFixed(3)} ${(p.y/sy).toFixed(3)}`).join(' L ') + ' Z');
+        points = [];
+      };
+      for (const c of commands) {
+        if (c.type === 'Z') { finish(); continue; }
+        const end = scaled(c.x, c.y);
+        if (c.type === 'M') { finish(); points = [end]; }
+        else if (c.type === 'L') points.push(end);
+        else if (c.type === 'Q' || c.type === 'C') {
+          const start = current, a = scaled(c.x1, c.y1),
+            b = c.type === 'C' ? scaled(c.x2, c.y2) : a;
+          const length = Math.hypot(a.x-start.x, a.y-start.y) +
+            Math.hypot(b.x-a.x, b.y-a.y) + Math.hypot(end.x-b.x, end.y-b.y);
+          const steps = Math.max(2, Math.ceil(length/2));
+          for (let i = 1; i <= steps; i++) {
+            const t = i/steps, u = 1-t;
+            points.push(c.type === 'Q' ? {
+              x: u*u*start.x + 2*u*t*a.x + t*t*end.x,
+              y: u*u*start.y + 2*u*t*a.y + t*t*end.y
+            } : {
+              x: u*u*u*start.x + 3*u*u*t*a.x + 3*u*t*t*b.x + t*t*t*end.x,
+              y: u*u*u*start.y + 3*u*u*t*a.y + 3*u*t*t*b.y + t*t*t*end.y
+            });
+          }
+        }
+        current = end;
+      }
+      finish();
+      return contours.join(' ');
     }
     // returns array of fn(extraAttrs)->svg markup (one per glyph)
     // Fit text into a grid slot. Loaded fonts produce glyph paths; the fallback uses SVG text.
@@ -659,6 +808,15 @@
           stretchY = y => y < top ? top + (y - top) * growth :
             y > bottom ? bottom + (y - bottom) * growth : y;
         ctx.font = `400 ${fs}px ${family}`;
+        if (s.sharedAddress) {
+          const reference = ctx.measureText('H0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'),
+            top = stretchY(-(reference.actualBoundingBoxAscent || cap)),
+            bottom = stretchY(reference.actualBoundingBoxDescent || 0);
+          s = {...s, sharedFit: {
+            width: Math.max(...s.addressTexts.map(t => ctx.measureText(t).width), 1),
+            height: bottom-top, top
+          }};
+        }
         let advance = 0;
         const glyphs = [...text].map(c => {
           const m = ctx.measureText(c), x = advance;
@@ -696,6 +854,14 @@
           return -k * (yf > top ? top + (yf - top) * scale :
             yf < bottom ? bottom + (yf - bottom) * scale : yf);
         };
+      if (s.sharedAddress) {
+        const reference = DF.getPath('H0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ', 0, 0, fs).getBoundingBox(),
+          top = stretchY(reference.y1), bottom = stretchY(reference.y2);
+        s = {...s, sharedFit: {
+          width: Math.max(...s.addressTexts.map(t => DF.getAdvanceWidth(t, fs)), 1),
+          height: bottom-top, top
+        }};
+      }
       let x = 0;
       const paths = [...text].map(c => {
         const glyph = DF.charToGlyph(c), path = glyph.getPath(x, 0, fs);
@@ -713,39 +879,50 @@
         y0 = Math.min(...boxes.map(b => b.y1)),
         y1 = Math.max(...boxes.map(b => b.y2)),
         fit = textFit(s, x0, x1, y0, y1);
-      return paths.map(path => ex =>
-        `<path ${ex} transform="${tf} ${fit}" d="${path.toPathData(3)}"/>`);
+      const sharedScale = s.sharedFit ? Math.min(L/s.sharedFit.width,T/s.sharedFit.height) : null,
+        fitX = sharedScale ?? (s.naturalLength ? Math.min(1, L / (x1-x0 || 1)) : L / (x1-x0 || 1)),
+        fitY = sharedScale ?? T / (y1-y0 || 1);
+      return paths.map(path => {
+        let outline;
+        return ex => {
+          const geometric = ex.includes('data-offset-outline');
+          if (geometric && outline === undefined) outline = fontOutlinePath(path.commands, fitX, fitY);
+          return `<path ${ex} transform="${tf} ${fit}" d="${geometric ? outline : path.toPathData(3)}"/>`;
+        };
+      });
     }
     // A half-ring includes both straight legs and the curved end, split at mid-height.
-    function ringPoint(radius, distance, bottom) {
+    function ringPoint(radius, distance, bottom, upperCenter = 585, lowerCenter = 1050) {
       const arcEnd = Math.PI * radius / 2,
-        halfLength = Math.PI * radius + 465;
+        halfLength = Math.PI * radius + lowerCenter-upperCenter;
       // Side-centered labels may continue around either neighboring curved end.
       if (Math.abs(distance) > halfLength / 2) {
         const otherDistance = distance < 0 ? -halfLength - distance : halfLength - distance,
-          point = ringPoint(radius, otherDistance, !bottom);
+          point = ringPoint(radius, otherDistance, !bottom, upperCenter, lowerCenter);
         return {...point, degrees: point.degrees + 180};
       }
       if (distance < -arcEnd) {
         const leg = -distance - arcEnd;
-        return {x: 600 - radius, y: bottom ? 1050 - leg : 585 + leg,
+        return {x: 600 - radius, y: bottom ? lowerCenter - leg : upperCenter + leg,
           degrees: bottom ? 90 : -90};
       }
       if (distance > arcEnd) {
         const leg = distance - arcEnd;
-        return {x: 600 + radius, y: bottom ? 1050 - leg : 585 + leg,
+        return {x: 600 + radius, y: bottom ? lowerCenter - leg : upperCenter + leg,
           degrees: bottom ? -90 : 90};
       }
       const angle = distance / radius;
       return {x: 600 + radius * Math.sin(angle),
-        y: bottom ? 1050 + radius * Math.cos(angle) : 585 - radius * Math.cos(angle),
+        y: bottom ? lowerCenter + radius * Math.cos(angle) : upperCenter - radius * Math.cos(angle),
         degrees: (bottom ? -angle : angle) * 180 / Math.PI};
     }
     // Place glyphs by arc distance; each glyph follows its path's tangent.
     // Reuse the slab renderer so hosted and uploaded fonts share years behavior.
     function setRadialText(slot, text) {
       if (!text) return [];
-      const thickness = slot.h,
+      const upperCenter = slot.upperCenter ?? 585, lowerCenter = slot.lowerCenter ?? 1050,
+        straight = lowerCenter-upperCenter,
+        thickness = slot.h,
         ctx = document.createElement('canvas').getContext('2d');
       ctx.font = '400 100px manicotti, "Rubik Mono One", Impact, sans-serif';
       const capRatio = DF ? DF.charToGlyph('H').getBoundingBox().y2 / DF.unitsPerEm :
@@ -756,10 +933,10 @@
         widths = chars.map(c => DF ? DF.getAdvanceWidth(c, fs) : ctx.measureText(c).width),
         total = widths.reduce((sum, width) => sum + width, 0),
         // Keep natural widths; only condense after the whole half-ring is used.
-        sideLength = slot.startY == null ? 232.5 :
-          slot.radial === 'bottom' ? 1050 - slot.startY : slot.startY - 585,
+        sideLength = slot.startY == null ? straight/2 :
+          slot.radial === 'bottom' ? lowerCenter - slot.startY : slot.startY - upperCenter,
         available = slot.pathAlign === 'side-center' ?
-          Math.PI * slot.radius + 465 - thickness : Math.PI * slot.radius + 2 * sideLength - thickness,
+          Math.PI * slot.radius + straight - thickness : Math.PI * slot.radius + 2 * sideLength - thickness,
         fit = Math.min(1, available / (total || 1)),
         sideCenter = -Math.PI * slot.radius / 2 - sideLength;
       // Center the whole address on the side's page-center point, not its first glyph.
@@ -771,7 +948,7 @@
           chars.forEach((c, i) => {
             const width = widths[i] * fit,
               center = cursor + width / 2,
-              point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom'),
+              point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom', upperCenter, lowerCenter),
               angle = point.degrees * Math.PI / 180,
               extent = Math.abs(Math.sin(angle)) * width / 2 +
                 Math.abs(Math.cos(angle)) * thickness / 2;
@@ -783,7 +960,7 @@
           return (minY + maxY) / 2;
         };
         // Slide along the ring until the rotated lettering's visible bounds balance.
-        const range = (Math.PI * slot.radius + 465) / 4,
+        const range = (Math.PI * slot.radius + straight) / 4,
           target = slot.startY ?? 900;
         let low = distance - range, high = distance + range;
         for (let i = 0; i < 40; i++) {
@@ -797,7 +974,7 @@
       return chars.flatMap((c, i) => {
         const width = widths[i] * fit,
           center = distance + width / 2,
-          point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom'),
+          point = ringPoint(slot.radius, slot.reverse ? -center : center, slot.radial === 'bottom', upperCenter, lowerCenter),
           {x, y} = point,
           degrees = point.degrees + (slot.reverse ? 180 : 0);
         distance += width;
@@ -810,9 +987,26 @@
     }
     // Warp the entire text band with a continuous vertical bow. Narrow vector
     // slices shear the original lettering instead of rotating individual glyphs.
+    // Smooth asymmetric waves through reference-shaped crests and troughs.
+    function profileWave(profile, t) {
+      const slopes = profile.map(([x,y], i) => {
+        const before = profile[Math.max(0,i-1)], after = profile[Math.min(profile.length-1,i+1)];
+        if (i === 0 || i === profile.length-1) return (after[1]-before[1])/(after[0]-before[0]);
+        const left = (y-before[1])/(x-before[0]), right = (after[1]-y)/(after[0]-x);
+        return left*right <= 0 ? 0 : 2*left*right/(left+right);
+      });
+      let i = 0;
+      while (i < profile.length-2 && t > profile[i+1][0]) i++;
+      const [x0,y0] = profile[i], [x1,y1] = profile[i+1],
+        width = x1-x0, u = Math.max(0,Math.min(1,(t-x0)/width));
+      return (2*u*u*u-3*u*u+1)*y0 + (u*u*u-2*u*u+u)*width*slopes[i] +
+        (-2*u*u*u+3*u*u)*y1 + (u*u*u-u*u)*width*slopes[i+1];
+    }
     function waveOffset(slot, x) {
+      if (slot.stadiumCap) return envelopeBounds(slot, x).top;
       if (slot.flowing) {
-        return slot.amplitude * Math.cos(2 * Math.PI * (x / slot.w - slot.phase));
+        return slot.amplitude * (slot.profile ? profileWave(slot.profile, x/slot.w) :
+          Math.cos(2 * Math.PI * (x / slot.w - slot.phase)));
       }
       if (slot.bowl) {
         const t = (slot.x + x - slot.bowl.x) / slot.bowl.w;
@@ -830,13 +1024,29 @@
     }
     // Keep the inner wave while stretching the outer edge to the frame.
     function envelopeBounds(slot, x) {
+      if (slot.stadiumCap) {
+        const dx = x-slot.w/2,
+          outer = Math.sqrt(Math.max(0, slot.radius*slot.radius-dx*dx)),
+          inner = Math.sqrt(Math.max(0, slot.innerRadius*slot.innerRadius-dx*dx));
+        if (slot.outsideStadium) return slot.stadiumCap === 'top' ? {
+          top: 75-slot.y, bottom: slot.centerY-outer-slot.y
+        } : {
+          top: slot.centerY+outer-slot.y, bottom: 1715-slot.y
+        };
+        return slot.stadiumCap === 'top' ? {
+          top: slot.centerY-outer-slot.y, bottom: slot.centerY-inner-slot.y
+        } : {
+          top: slot.centerY+inner-slot.y, bottom: slot.centerY+outer-slot.y
+        };
+      }
       if (slot.flowing) {
         const constrain = offset => Math.max(slot.frameTop ?? -Infinity,
           Math.min(slot.frameBottom ?? Infinity, slot.y + offset)) - slot.y;
         return {
           top: constrain(waveOffset(slot, x)),
           bottom: constrain(slot.h + slot.bottomAmplitude *
-            Math.cos(2 * Math.PI * (x / slot.w - slot.bottomPhase)))
+            (slot.bottomProfile ? profileWave(slot.bottomProfile, x/slot.w) :
+              Math.cos(2 * Math.PI * (x / slot.w - slot.bottomPhase))))
         };
       }
       if (slot.frameEdge === 'top') {
@@ -872,7 +1082,7 @@
     }
     function slotGuide(slot) {
       const attrs = 'fill="none" stroke="#00a2ff" stroke-dasharray="8 6" stroke-width="2"';
-      if (slot.envelope && (slot.frameEdge || slot.flowing)) {
+      if (slot.envelope && (slot.frameEdge || slot.flowing || slot.stadiumCap)) {
         const points = Array.from({length: 65}, (_, i) => {
           const x = slot.w * i / 64;
           return {x: slot.x + x, ...envelopeBounds(slot, x)};
@@ -1100,13 +1310,17 @@
               return `<path d="M ${cx} ${y} L ${x+w} ${cy} L ${cx} ${y+h} L ${x} ${cy} Z"/>`;
             case 'concertHall':
               return `<path d="M ${x} ${y+h} V ${y+w*.5} A ${w/2} ${w/2} 0 0 1 ${x+w} ${y+w*.5} V ${y+h}"/>`;
+            case 'arenaV3':
+            case 'arenaV2':
             case 'arena': {
               const radius = 490 * scale,
-                straight = 465 * scale,
-                upper = 817.5 - straight / 2, lower = 817.5 + straight / 2;
+                straight = (['arenaV2', 'arenaV3'].includes(type) ? 240 : 465) * scale,
+                center = ['arenaV2', 'arenaV3'].includes(type) ? 895 : 817.5,
+                upper = center - straight / 2, lower = center + straight / 2;
               return `<path d="M ${600-radius} ${upper} A ${radius} ${radius} 0 0 1 ${600+radius} ${upper} V ${lower} A ${radius} ${radius} 0 0 1 ${600-radius} ${lower} Z"/>`;
             }
             case 'thirdSpace':
+            case 'thirdSpaceV2':
               return `<path d="M ${x} ${y+h} V ${y+h*.25} L ${cx} ${y} L ${x+w} ${y+h*.25} V ${y+h}"/>`;
             case 'outdoors': {
               // Evenly spaced semicircular seating tiers share a stage center.
@@ -1127,7 +1341,7 @@
         // preserving quadrant symmetry. Mirror the bands around the motif's
         // actual center, including the lower club tunnel and stadium center.
         const halfCount = 2 + Math.round(24 * density),
-          centerY = type === 'outdoors' ? 510 : type === 'arena' ? 817.5 : type === 'club' ?
+          centerY = type === 'outdoors' ? 510 : ['arenaV2', 'arenaV3'].includes(type) ? 895 : type === 'arena' ? 817.5 : type === 'club' ?
             (slots[1].y + slots[1].h + 35 + frame.y + frame.h - 190) / 2 :
             frame.y + frame.h / 2,
           halfSpan = Math.max(centerY, 1800 - centerY),
@@ -1237,7 +1451,10 @@
       nightClub: 'Outer address band wraps the inner three-sided name; name keeps its natural length.',
       bar: 'Three centered name bands step inward with decreasing heights; address sits above.',
       thirdSpace: 'Three name bands grow downward in height and stay anchored to the bottom; address sits above.',
+      thirdSpaceV2: 'Three wavy name envelopes share flowing boundaries, grow in height, and stay anchored to the bottom; address sits above.',
       arena: 'Full venue name repeats on the inner upper and lower arcs; address follows the outer arcs.',
+      arenaV2: 'First title word fills the envelope above the outer stadium arc; the second fills below it. Addresses follow a separate inner stadium ring; title envelopes extend to the inside border.',
+      arenaV3: 'Narrower centered title envelopes curve above and below the stadium; straight vertical addresses sit against the inside side borders.',
       concertHall: 'Four name slots form two columns of waves; address spans the top envelope.',
       silly: 'Paired name words and the address fill three flush wave bands; adjacent layers share the same boundary curve.',
       outdoors: 'First and third name words stretch from the inner waves to the top and bottom frame edges; address sits above the lower name bands.'
@@ -1307,7 +1524,8 @@
             text = slot.fullName ? S.name.trim().toUpperCase() :
               indices.map(index => words[index]).filter(Boolean).join(' ');
           const renderers = slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
-            setText({naturalLength: G.naturalLength, ...slot}, text);
+            setText({naturalLength: G.naturalLength, ...slot,
+              ...(slot.sharedAddress ? {addressTexts: [ad[0] || '', ad.slice(1).join(' ')]} : {})}, text);
           return renderers.map(render => Object.assign(render, {
             addressInk: !slot.fullName && indices.every(index => index >= (G.nameSlots || 3))
           }));
@@ -1318,22 +1536,43 @@
       const hasOffset = ['offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle);
       const solidTypeColor = ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .12) : cols[0];
       const mixedArtist = hasOffset && S.artistType === 'mixed';
+      const fixedWidthOutlines = hasOffset && S.vectorOutlines && !!DF && VENUE_TYPES[S.type]?.[2] === 'arenaV3';
       const artistTypeFill = hasOffset && S.artistType === 'touring' ? 'url(#artist-type-gradient)' : mixedArtist ? cols[0] : solidTypeColor;
       const outlineColor = hasOffset && S.artistType === 'mixed' ? cols[1] || '#ffffff' :
         hasOffset && S.artistType === 'local' ? solidTypeColor :
         ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0];
       const offsetCount = 1 + Math.floor(9 * Math.max(0, Math.min(1, tFromCap(S.cap) / 1000))),
         offsetLayers = hasOffset ? Array.from({length: offsetCount}, (_, i) => offsetCount - i) : [],
-        offsetDefs = offsetLayers.flatMap(i => [
-          [i * 12, outlineColor, `offset-${i}-ink`],
+        edge = CFG.keyline,
+        offsetSource = hasOffset ? `<path d="M ${edge} ${edge} H ${1200-edge} V ${1800-edge} H ${edge} Z M ${f.x} ${f.y} V ${f.y+f.h} H ${f.x+f.w} V ${f.y} Z"/>` +
+          items.map(render => render(`fill="white" stroke="none"${S.vectorOutlines ? ' data-offset-outline="true"' : ''}`)).join('') : '',
+        offsetSpecs = offsetLayers.flatMap(i => [
+          [i * 12 - (fixedWidthOutlines ? 1.5 : 0), outlineColor, `offset-${i}-ink`],
           [i * 12 - 3, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5', `offset-${i}-gap`]
-        ]).map(([radius, color, id]) => `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
+        ]).concat(hasOffset ? [[fixedWidthOutlines ? 0 : 3, outlineColor, 'offset-direct-ink']] : []);
+      // Keep the live-text preview while the bundled vector font is loading.
+      // Once ready, all repeated outlines and gradient masks use polygon paths.
+      const vectorPaths = hasOffset && S.vectorOutlines && DF ? vectorOffsetPaths(
+        offsetSource, offsetSpecs.map(([r]) => r)
+      ) : null,
+        offsetDefs = offsetSpecs.map(([radius, color, id], index) => vectorPaths ?
+          `<path id="${id}" d="${vectorPaths[index]}" fill-rule="nonzero"/>` :
+          `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
+        offsetUse = (id, color) => vectorPaths ? fixedWidthOutlines ?
+          `<use href="#${id}" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>` :
+          `<use href="#${id}" fill="${color}"/>` :
+          `<use href="#offset-shape" filter="url(#${id})"/>`,
         offsetArtwork = offsetLayers.map(i => (mixedArtist || S.artistType === 'touring' ?
           `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#mixed-outline-${i})"/>` :
-          `<use href="#artwork-shape" filter="url(#offset-${i}-ink)"/>`) +
-          (['offsetGradient', 'offsetFull'].includes(S.colorStyle) ?
+          offsetUse(`offset-${i}-ink`, outlineColor)) +
+          (fixedWidthOutlines ? '' : ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ?
             `<rect width="1200" height="1800" fill="url(#offset-background)" mask="url(#offset-gap-${i})"/>` :
-            `<use href="#artwork-shape" filter="url(#offset-${i}-gap)"/>`)).join('');
+            offsetUse(`offset-${i}-gap`, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5'))).join(''),
+        // V3 draws an actual three-unit stroke after the lettering fill.
+        // Other layouts retain their existing expanded edge beneath the fill.
+        directArtworkEdge = !hasOffset ? '' : mixedArtist || S.artistType === 'touring' ?
+          `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#direct-artwork-edge)"/>` :
+          offsetUse('offset-direct-ink', outlineColor);
       // Stack genre bands upward from the bottom. Price changes their height,
       // never their count; the last color fills the remaining space above.
       const gradientPalette = cols.length > 1 ? cols : [cols[0], '#ffffff'],
@@ -1394,27 +1633,30 @@
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
     ${offsetDefs}
-    ${hasOffset && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape" filter="url(#offset-${i}-ink)"/></mask>`).join('') : ''}
+    ${hasOffset && (mixedArtist || S.artistType === 'touring') ? `<mask id="direct-artwork-edge" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse('offset-direct-ink', 'white')}</mask>` : ''}
+    ${hasOffset && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-ink`, 'white')}</mask>`).join('') : ''}
     ${hasOffset && S.artistType === 'touring' ? grad('artist-type-gradient', kl, 1800 - kl, gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
     ${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
       priceStops) +
-      offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape" filter="url(#offset-${i}-gap)"/></mask>`).join('') : ''}
-    ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="${f.y}" x2="${f.x + f.w}" y2="${f.y + f.h}"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${items.filter(render => render.addressInk).map(render => render('fill="white" stroke="none"')).join('')}</mask>` : ''}
+      offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-gap`, 'white')}</mask>`).join('') : ''}
+    ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="-900" x2="${f.x}" y2="2700"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${items.filter(render => render.addressInk).map(render => render('fill="white" stroke="none"')).join('')}</mask>` : ''}
     <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
+    ${hasOffset && !vectorPaths ? `<g id="offset-shape" fill="white" stroke="none" filter="url(#solidify)">${offsetSource}</g>` : ''}
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <g clip-path="url(#postcard-edge)">
     <rect width="1200" height="1800" fill="${S.colorStyle === 'offsetFull' ? 'url(#offset-background)' : '#fff'}"/>
     <g>
     ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? `
       <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
-      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${fixedWidthOutlines ? '' : directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect width="1200" height="1800" fill="${artistTypeFill}"/></g>
       ${mixedArtist ? `<rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/>` : ''}
+      ${fixedWidthOutlines ? directArtworkEdge : ''}
       ${S.colorStyle === 'screenprint' ? items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('') : ''}
     ` : `
       <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
       <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
-      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${fixedWidthOutlines ? '' : directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     `}
     </g>
@@ -1460,6 +1702,7 @@
       $('addr').value = S.addr;
       $('hood').value = S.hood;
       $('colorStyle').value = S.colorStyle;
+      $('vectorOutlines').checked = S.vectorOutlines;
       $('latitude').value = S.latitude ?? '';
       $('longitude').value = S.longitude ?? '';
       $('yr').value = $('yn').value = S.years;
@@ -1492,7 +1735,7 @@
       });
     }
     const load = p => {
-      S = JSON.parse(JSON.stringify({...DEF, ...p, colorStyle: S.colorStyle, latitude: p.latitude ?? null, longitude: p.longitude ?? null}));
+      S = JSON.parse(JSON.stringify({...DEF, ...p, colorStyle: S.colorStyle, vectorOutlines: S.vectorOutlines, latitude: p.latitude ?? null, longitude: p.longitude ?? null}));
       updateNeighborhoodCoordinates();
       sync();
       draw()
@@ -1542,6 +1785,7 @@
     bind('addr', e => S.addr = e.value);
     bind('hood', e => { S.hood = e.value; updateNeighborhoodCoordinates(); });
     bind('colorStyle', e => S.colorStyle = e.value);
+    bind('vectorOutlines', e => S.vectorOutlines = e.checked);
     bind('artistType', e => S.artistType = e.value);
     bind('independent', e => S.independent = e.value === '' ? null : e.value === 'yes');
     bind('colorGrid', () => {});
