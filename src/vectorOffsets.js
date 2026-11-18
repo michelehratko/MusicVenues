@@ -111,15 +111,52 @@
     }
     return combine(visit(root, [1,0,0,1,0,0]), null, ClipperLib.ClipType.ctUnion);
   }
-  window.vectorOffsetPaths = (markup, radii) => {
+  // Replace only actual corners with tangent circular fillets. Keep sampled
+  // font curves and all straight edges outside the fillet exactly in place.
+  function roundCorners(path, radius) {
+    if (radius <= 0) return path;
+    return path.flatMap((p, i) => {
+      const a = path[(i+path.length-1)%path.length], b = path[(i+1)%path.length],
+        incoming = Math.hypot(p.X-a.X, p.Y-a.Y), outgoing = Math.hypot(b.X-p.X, b.Y-p.Y);
+      if (!incoming || !outgoing) return [p];
+      const ux = (p.X-a.X)/incoming, uy = (p.Y-a.Y)/incoming,
+        vx = (b.X-p.X)/outgoing, vy = (b.Y-p.Y)/outgoing,
+        turn = Math.atan2(ux*vy-uy*vx, ux*vx+uy*vy), angle = Math.abs(turn);
+      // Small turns belong to the existing curves, rather than sharp corners.
+      if (angle < Math.PI/9 || angle > Math.PI-1e-6) return [p];
+      const tangent = Math.tan(angle/2),
+        distance = Math.min(radius*scale*tangent, incoming*.45, outgoing*.45),
+        actualRadius = distance/tangent, sign = Math.sign(turn),
+        start = {X:p.X-ux*distance, Y:p.Y-uy*distance},
+        end = {X:p.X+vx*distance, Y:p.Y+vy*distance},
+        center = {X:start.X-uy*actualRadius*sign, Y:start.Y+ux*actualRadius*sign},
+        startAngle = Math.atan2(start.Y-center.Y, start.X-center.X),
+        steps = Math.max(2, Math.ceil(angle*Math.sqrt(actualRadius/(.1*scale))));
+      return Array.from({length:steps+1}, (_, j) => {
+        if (j === 0) return start;
+        if (j === steps) return end;
+        const t = startAngle + turn*j/steps;
+        return {X:Math.round(center.X+actualRadius*Math.cos(t)),
+          Y:Math.round(center.Y+actualRadius*Math.sin(t))};
+      });
+    });
+  }
+  window.vectorOffsetPaths = (markup, radii, corners = 'auto', radius = 8) => {
     if (typeof ClipperLib === 'undefined') throw Error('Vector offset library did not load');
-    if (cachedKey !== markup) {
+    const key = corners + ':' + radius + ':' + markup;
+    if (cachedKey !== key) {
       // Remove almost coincident vertices and sub-unit slice teeth after all
       // transforms/clips. Cleaning glyphs before slicing cannot catch those.
       const paths = combine(ClipperLib.Clipper.CleanPolygons(silhouette(markup), .6*scale),
         null, ClipperLib.ClipType.ctUnion);
       cachedPaths = combine(paths.flatMap(simplifySmallPocket), null, ClipperLib.ClipType.ctUnion);
-      cachedOffsets = new Map(); cachedKey = markup;
+      // Round the source anchors once. All repetitions then follow the same
+      // letter contour, rather than independently changing each offset layer.
+      if (corners === 'round' && radius > 0) {
+        cachedPaths = combine(cachedPaths.map(path => roundCorners(path, radius)),
+          null, ClipperLib.ClipType.ctUnion);
+      }
+      cachedOffsets = new Map(); cachedKey = key;
     }
     // Use round joins along sampled curves and at tiny slice teeth. Only a
     // clear corner between substantial edges gets a bounded sharp miter.
@@ -134,22 +171,28 @@
         cosine = (ax*bx+ay*by)/(incoming*outgoing || 1);
       // Keep the original selective joins: smooth curves and tight tips,
       // with sharp corners only on clear, substantial edges.
-      const sharp = incoming >= 2*scale && outgoing >= 2*scale &&
+      const sharp = corners === 'sharp' || corners === 'auto' && incoming >= 2*scale && outgoing >= 2*scale &&
         cosine <= Math.cos(50*Math.PI/180) && cosine >= -.5;
       return offsetPoint.call(this, j, k, sharp ?
         ClipperLib.JoinType.jtMiter : ClipperLib.JoinType.jtRound);
     };
     offset.AddPaths(cachedPaths, ClipperLib.JoinType.jtRound, ClipperLib.EndType.etClosedPolygon);
-    return radii.map(radius => {
-      if (!cachedOffsets.has(radius)) {
+    return radii.map(distance => {
+      if (!cachedOffsets.has(distance)) {
         const result = [];
-        offset.Execute(result, radius*scale);
-        const simple = combine(result, null, ClipperLib.ClipType.ctUnion)
+        offset.Execute(result, distance*scale);
+        let simple = combine(result, null, ClipperLib.ClipType.ctUnion)
           .filter(path => Math.abs(ClipperLib.Clipper.Area(path)) >= scale*scale);
-        cachedOffsets.set(radius, simple.map(path => 'M ' + path.map(p =>
+        // Expanded letters can meet and create entirely new concave anchors.
+        // Round these after union too; source fillets cannot prevent them.
+        if (corners === 'round' && radius > 0 && distance !== 0) {
+          simple = combine(simple.map(path => roundCorners(path, radius)),
+            null, ClipperLib.ClipType.ctUnion);
+        }
+        cachedOffsets.set(distance, simple.map(path => 'M ' + path.map(p =>
           `${p.X/scale} ${p.Y/scale}`).join(' L ') + ' Z').join(' '));
       }
-      return cachedOffsets.get(radius);
+      return cachedOffsets.get(distance);
     });
   };
 })();

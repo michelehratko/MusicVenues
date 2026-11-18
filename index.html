@@ -33,7 +33,9 @@
       .chip:hover, .b:hover { background: #d0d0d0; }
       .chip.on { background: #242424; color: #fff; border-color: #242424; }
       .chip i { display: none; }
-      .actions { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; margin-top: 5px; }
+      .genre-order { display: block; margin: 8px 0; }
+      .b:disabled { opacity: .45; cursor: default; }
+      .actions { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
       .preview { display: flex; justify-content: flex-end; align-items: flex-start; min-width: 0; padding-top: 4px; }
       #pv { width: min(100%, calc((100svh - 80px) * 2 / 3)); aspect-ratio: 2 / 3; background: transparent; }
       #pv svg { display: block; width: 100%; height: 100%; }
@@ -82,6 +84,11 @@
       <section class="workspace" aria-label="Postcard editor">
         <aside class="primary" aria-label="Main controls">
           <h1>Postcard Generator</h1>
+          <div class="actions">
+            <button type="button" class="b" id="rnd">Randomize</button>
+            <button type="button" class="b" id="svg">Download SVG</button>
+            <button type="button" class="b" id="png">Download PNG</button>
+          </div>
           <label for="name">Venue Name<input id="name" type="text"/></label>
           <label for="addr">Venue Address<input id="addr" type="text"/></label>
           <label for="hood">Neighborhood<input id="hood" type="text" list="neighborhoodOptions"/><datalist id="neighborhoodOptions"></datalist></label>
@@ -89,32 +96,28 @@
             <label for="opened">Year Opened<input id="opened" type="number" inputmode="numeric"/></label>
             <label for="cn2">Capacity<input id="cn2" max="40000" min="30" type="number" inputmode="numeric"/></label>
           </div>
-          <label for="ticketPrice">Average Ticket Price ($)<span class="hint">Controls background band height in the gradient outline style: cheaper tickets keep the first bands low; higher prices make them taller (up to $200).</span><input id="ticketPrice" type="number" min="0" step="0.01" inputmode="decimal"/></label>
+          <label for="ticketPrice">Average Ticket Price ($)<span class="hint">Gradient outline: controls band height. Ticket lightness style: free venues use the original colors; higher prices lighten them toward white, up to 50% at $200+.</span><input id="ticketPrice" type="number" min="0" step="0.01" inputmode="decimal"/></label>
           <div class="paired">
             <label for="artistType">Artist Type<select id="artistType"><option value="local">Local</option><option value="touring">Touring</option><option value="mixed">Mixed</option></select></label>
             <label for="independent">Independent<select id="independent"><option value="">Select…</option><option value="yes">Yes</option><option value="no">No</option></select></label>
           </div>
           <fieldset><legend>Venue Type</legend><div class="chips" id="type" role="group" aria-label="Venue type"></div></fieldset>
-          <fieldset><legend>Genres <span class="hint">(pick 1–3)</span></legend><div class="chips" id="gen" role="group" aria-label="Genres"></div></fieldset>
+          <fieldset>
+            <legend>Genres <span class="hint">(pick 1–3)</span></legend>
+            <div class="chips" id="gen" role="group" aria-label="Genres"></div>
+            <output id="genreOrder" class="genre-order hint" aria-live="polite"></output>
+            <button type="button" class="b" id="shuffleColors" aria-describedby="genreShuffleHint">Shuffle genre order</button>
+            <p id="genreShuffleHint" class="hint">Swap where the selected genre colors appear in the postcard.</p>
+          </fieldset>
           <label class="check"><input id="colorGrid" type="checkbox"/>Show grid, composition &amp; color placement</label>
           <div id="compositionRules" class="hint" hidden></div>
           <label for="colorStyle">Color style
             <select id="colorStyle">
-              <option value="stripes">Original bands</option>
-              <option value="clouds">Color clouds</option>
-              <option value="warped">Warped bands</option>
-              <option value="screenprint">Flat screenprint</option>
-              <option value="hybrid">Linear background + solid type</option>
-              <option value="anchored">Warped background + solid type</option>
-              <option value="bitmap">Sliced bands + solid type</option>
-              <option value="offset">Repeated offset outlines</option>
               <option value="offsetGradient">Offset outlines + gradient background</option>
-              <option value="offsetFull">Offset outlines + full-bleed gradient</option>
-              <option value="graphic">Graphic lines + cuts</option>
             </select>
           </label>
           <label class="check"><input id="vectorOutlines" type="checkbox"/>Use vector outlines</label>
-          <p class="hint">For offset outline styles. Turn off to use the original filter outlines.</p>
+          <p class="hint">Turn off to use filter-based outlines.</p>
           <label for="pack">Name Line Packing
             <select id="pack">
               <option value="0">Spread out (one word per slot)</option>
@@ -123,12 +126,10 @@
               <option value="3">Split words across containers</option>
             </select>
           </label>
-          <div class="actions">
-            <button type="button" class="b" id="shuffleColors">Shuffle color placement</button>
-            <button type="button" class="b" id="rnd">Randomize</button>
-            <button type="button" class="b" id="svg">Download SVG</button>
-            <button type="button" class="b" id="png">Download PNG</button>
-          </div>
+          <label for="cornerRadius">Type corner radius <output id="cornerRadiusValue">8</output>
+            <input id="cornerRadius" type="range" min="0" max="40" step="1" value="8"/>
+          </label>
+          <p class="hint">Rounds sharp type anchors in offset styles without changing the selected style. Zero keeps the original corners.</p>
         </aside>
         <main class="preview" aria-label="Postcard preview"><div id="pv"></div></main>
       </section>
@@ -144,7 +145,7 @@
             </div>
             <p id="locationStatus" class="hint" role="status"></p>
             <p class="hint">Coordinates come from your neighborhood spreadsheet. Choose a suggested neighborhood; all venues in that neighborhood share its color anchor.</p>
-            <p class="hint">The postcard maps SF: north is up, east is right. Coordinates anchor the color field; nearby venues have similar placement. In warped bands, color emanates from the neighborhood point. All capacities have strong distortion and rough print edges. Higher capacity adds fragmentation, uneven pigment pockets, and a little more repetition. Without coordinates, the field uses the city center. Flat screenprint: first genre colors the name and frame, second colors the background, third colors the address. With one genre, the background is white; with two, the address matches the name. Linear background + solid type uses the first genre color for all text and the frame, and applies capacity-driven linear bands to the background. Warped background + solid type uses the same background as Warped bands, with the first genre color applied as solid lettering and frame on top. Graphic lines + cuts uses flat inks and tightly nested tunnel contours tailored to each venue type: capacity controls the number of horizontal cuts, with equal and opposite sideways shifts on either side of the centerline to preserve symmetry. Graphic mode uses two inks: the first genre colors lettering, frame, and graphic lines; the second colors the background. Years open increases graphic line thickness from 3 to 32 units over 1–200 years, with stronger changes in the early years. Repeated offset outlines uses the first genre color for type and border, the second for the background, and the third for repeated outline lines (falling back to the first when only one or two genres are selected). It uses capacity on a logarithmic scale: 30–40,000 people maps to 1–10 outline repetitions. Genre colors and seed offset also affect similarity.</p>
+            <p class="hint">Capacity controls the number of offset outlines. Selected genre colors form the background gradient, and ticket price controls the height of its color bands.</p>
           </div>
           <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
         <label class="check">
@@ -268,16 +269,16 @@
       ['Arena v3', 1, 'arenaV3']
     ]; // [name, implemented, grid key]
     const GENRES = [
-      ['pop', '#2f8cff'],
-      ['rock', '#e8332a'],
-      ['hip hop', '#ffd21f'],
-      ['punk', '#ff1fd0'],
-      ['mixed', '#ff9a1f'],
-      ['experimental', '#7a2bd1'],
-      ['classical', '#7bc043'],
-      ['electronic', '#19e6c1'],
+      ['pop', '#ff008d'],
+      ['rock', '#ff180c'],
+      ['hip hop', '#ffd016'],
+      ['punk', '#7310b1'],
+      ['mixed', '#0095d5'],
+      ['experimental', '#08c884'],
+      ['classical', '#e66b00'],
+      ['electronic', '#96df0a'],
       ['jazz', '#2a4bff'],
-      ['latin', '#ff6a3d']
+      ['latin', '#d95dd3']
     ];
     const CFG = {
       fill: .9,
@@ -597,8 +598,9 @@
       genres: [3],
       seed: 0,
       grain: 60,
-      colorStyle: "screenprint",
+      colorStyle: "offsetGradient",
       vectorOutlines: true,
+      cornerRadius: null,
       latitude: null,
       longitude: null,
       guides: false,
@@ -1502,6 +1504,10 @@
     }
     // Compose the postcard from gradients, grain, clipping masks, outlined lettering, and footer.
     function build(preview = false) {
+      // Export real geometry even when the preview uses filter outlines.
+      const adjustableCorners = S.colorStyle === 'offsetGradientCorners' ||
+        (S.cornerRadius != null && ['offset', 'offsetGradient', 'offsetGradientLightness', 'offsetFull'].includes(S.colorStyle));
+      const useVectorOutlines = S.vectorOutlines || !preview || adjustableCorners;
       colorPlacement = [];
       typeClipId = 0;
       const G = activeGrid(),
@@ -1530,54 +1536,60 @@
             addressInk: !slot.fullName && indices.every(index => index >= (G.nameSlots || 3))
           }));
         });
-      const cols = (S.genres.length ? S.genres : [3]).map(i => GENRES[i][1]),
+      const ticketLightness = S.colorStyle === 'offsetGradientLightness' ?
+        .5 * Math.min(1, Math.max(0, S.ticketPrice || 0) / 200) : 0;
+      const cols = (S.genres.length ? S.genres : [3]).map(i =>
+        tint(GENRES[i][1], ticketLightness)),
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
-      const hasOffset = ['offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle);
-      const solidTypeColor = ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .12) : cols[0];
+      const hasOffset = ['offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle);
+      const solidTypeColor = ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .12) : cols[0];
       const mixedArtist = hasOffset && S.artistType === 'mixed';
-      const fixedWidthOutlines = hasOffset && S.vectorOutlines && !!DF && VENUE_TYPES[S.type]?.[2] === 'arenaV3';
+      const fixedWidthOutlines = hasOffset && useVectorOutlines && !!DF && VENUE_TYPES[S.type]?.[2] === 'arenaV3';
       const artistTypeFill = hasOffset && S.artistType === 'touring' ? 'url(#artist-type-gradient)' : mixedArtist ? cols[0] : solidTypeColor;
       const outlineColor = hasOffset && S.artistType === 'mixed' ? cols[1] || '#ffffff' :
         hasOffset && S.artistType === 'local' ? solidTypeColor :
-        ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0];
+        ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0];
       const offsetCount = 1 + Math.floor(9 * Math.max(0, Math.min(1, tFromCap(S.cap) / 1000))),
         offsetLayers = hasOffset ? Array.from({length: offsetCount}, (_, i) => offsetCount - i) : [],
         edge = CFG.keyline,
         offsetSource = hasOffset ? `<path d="M ${edge} ${edge} H ${1200-edge} V ${1800-edge} H ${edge} Z M ${f.x} ${f.y} V ${f.y+f.h} H ${f.x+f.w} V ${f.y} Z"/>` +
-          items.map(render => render(`fill="white" stroke="none"${S.vectorOutlines ? ' data-offset-outline="true"' : ''}`)).join('') : '',
+          items.map(render => render(`fill="white" stroke="none"${useVectorOutlines ? ' data-offset-outline="true"' : ''}`)).join('') : '',
         offsetSpecs = offsetLayers.flatMap(i => [
           [i * 12 - (fixedWidthOutlines ? 1.5 : 0), outlineColor, `offset-${i}-ink`],
           [i * 12 - 3, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5', `offset-${i}-gap`]
         ]).concat(hasOffset ? [[fixedWidthOutlines ? 0 : 3, outlineColor, 'offset-direct-ink']] : []);
       // Keep the live-text preview while the bundled vector font is loading.
-      // Once ready, all repeated outlines and gradient masks use polygon paths.
-      const vectorPaths = hasOffset && S.vectorOutlines && DF ? vectorOffsetPaths(
-        offsetSource, offsetSpecs.map(([r]) => r)
+      // Once ready, paint offsets directly as paths for SVG importers such as Figma.
+      const vectorPaths = hasOffset && useVectorOutlines && DF ? vectorOffsetPaths(
+        offsetSource, offsetSpecs.map(([r]) => r),
+        adjustableCorners ? ((S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp') : 'auto', S.cornerRadius ?? 8
       ) : null,
-        offsetDefs = offsetSpecs.map(([radius, color, id], index) => vectorPaths ?
-          `<path id="${id}" d="${vectorPaths[index]}" fill-rule="nonzero"/>` :
+        offsetDefs = vectorPaths ? '' : offsetSpecs.map(([radius, color, id]) =>
           `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
         offsetUse = (id, color) => vectorPaths ? fixedWidthOutlines ?
-          `<use href="#${id}" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>` :
-          `<use href="#${id}" fill="${color}"/>` :
+          `<path d="${vectorPaths[offsetSpecs.findIndex(spec => spec[2] === id)]}" fill-rule="nonzero" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="${adjustableCorners && !((S.cornerRadius ?? 8) > 0) ? 'miter' : 'round'}"/>` :
+          `<path d="${vectorPaths[offsetSpecs.findIndex(spec => spec[2] === id)]}" fill-rule="nonzero" fill="${color}"/>` :
           `<use href="#offset-shape" filter="url(#${id})"/>`,
         offsetArtwork = offsetLayers.map(i => (mixedArtist || S.artistType === 'touring' ?
+          vectorPaths ? offsetUse(`offset-${i}-ink`, `url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})`) :
           `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#mixed-outline-${i})"/>` :
           offsetUse(`offset-${i}-ink`, outlineColor)) +
-          (fixedWidthOutlines ? '' : ['offsetGradient', 'offsetFull'].includes(S.colorStyle) ?
+          (fixedWidthOutlines ? '' : ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ?
+            vectorPaths ? offsetUse(`offset-${i}-gap`, 'url(#offset-background)') :
             `<rect width="1200" height="1800" fill="url(#offset-background)" mask="url(#offset-gap-${i})"/>` :
             offsetUse(`offset-${i}-gap`, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5'))).join(''),
         // V3 draws an actual three-unit stroke after the lettering fill.
         // Other layouts retain their existing expanded edge beneath the fill.
         directArtworkEdge = !hasOffset ? '' : mixedArtist || S.artistType === 'touring' ?
+          vectorPaths ? offsetUse('offset-direct-ink', `url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})`) :
           `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#direct-artwork-edge)"/>` :
           offsetUse('offset-direct-ink', outlineColor);
       // Stack genre bands upward from the bottom. Price changes their height,
       // never their count; the last color fills the remaining space above.
       const gradientPalette = cols.length > 1 ? cols : [cols[0], '#ffffff'],
         ticketScale = Math.min(1, Math.max(0, S.ticketPrice || 0) / 200),
-        bandHeight = .12 + .30 * ticketScale,
+        bandHeight = S.colorStyle === 'offsetGradientLightness' ? .27 : .12 + .30 * ticketScale,
         blendWidth = bandHeight * .45,
         priceStops = [[gradientPalette[0], 0]];
       for (let i = 1; i < gradientPalette.length; i++) {
@@ -1606,6 +1618,14 @@
       const B = [...spread(L, 0, .8, prng(sp * 131 + 7919), sp ? 1 : 0), [cols[n - 1], .92],
         [tint(cols[n - 1]), 1]
       ];
+      const cornerArtwork = adjustableCorners && useVectorOutlines && DF ?
+        vectorOffsetPaths(offsetSource, [0], (S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp', S.cornerRadius ?? 8)[0] : null;
+      // The mixed-artist address is painted separately. It must use rounded
+      // geometry too, or its original anchors cover the rounded artwork below.
+      const addressSource = mixedArtist ? items.filter(render => render.addressInk)
+        .map(render => render(`fill="white" stroke="none"${cornerArtwork !== null ? ' data-offset-outline="true"' : ''}`)).join('') : '',
+        addressArtwork = cornerArtwork !== null && mixedArtist ?
+          `<path d="${vectorOffsetPaths(addressSource, [0], (S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp', S.cornerRadius ?? 8)[0]}" fill="white" fill-rule="nonzero"/>` : addressSource;
       const kl = CFG.keyline,
         // The colored frame and lettering are a single silhouette. Its inner
         // contour disappears wherever a letter touches the frame.
@@ -1613,7 +1633,7 @@
         guides = S.guides ? SL.map(slotGuide).join('') : '';
       return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in" style="isolation:isolate"><defs>
     <clipPath id="postcard-edge"><rect width="1200" height="1800" rx="0"/></clipPath>
-    ${['screenprint', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? '' : ['graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? colorField('B',cols,B,f.y,f.y+f.h,0) : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
+    ${['screenprint', 'offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? '' : ['graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? colorField('B',cols,B,f.y,f.y+f.h,0) : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
     <filter id="print-noise" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" seed="${S.seed + 1}" stitchTiles="stitch"/>
@@ -1633,24 +1653,24 @@
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
     ${offsetDefs}
-    ${hasOffset && (mixedArtist || S.artistType === 'touring') ? `<mask id="direct-artwork-edge" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse('offset-direct-ink', 'white')}</mask>` : ''}
-    ${hasOffset && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-ink`, 'white')}</mask>`).join('') : ''}
+    ${hasOffset && !vectorPaths && (mixedArtist || S.artistType === 'touring') ? `<mask id="direct-artwork-edge" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse('offset-direct-ink', 'white')}</mask>` : ''}
+    ${hasOffset && !vectorPaths && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-ink`, 'white')}</mask>`).join('') : ''}
     ${hasOffset && S.artistType === 'touring' ? grad('artist-type-gradient', kl, 1800 - kl, gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
-    ${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
+    ${['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
       priceStops) +
-      offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-gap`, 'white')}</mask>`).join('') : ''}
-    ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="-900" x2="${f.x}" y2="2700"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${items.filter(render => render.addressInk).map(render => render('fill="white" stroke="none"')).join('')}</mask>` : ''}
-    <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${borderShape}${items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
+      (vectorPaths ? '' : offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-gap`, 'white')}</mask>`).join('')) : ''}
+    ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="-900" x2="${f.x}" y2="2700"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${addressArtwork}</mask>` : ''}
+    <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${cornerArtwork !== null ? `<path d="${cornerArtwork}" fill-rule="nonzero"/>` : borderShape + items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
     ${hasOffset && !vectorPaths ? `<g id="offset-shape" fill="white" stroke="none" filter="url(#solidify)">${offsetSource}</g>` : ''}
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <g clip-path="url(#postcard-edge)">
     <rect width="1200" height="1800" fill="${S.colorStyle === 'offsetFull' ? 'url(#offset-background)' : '#fff'}"/>
     <g>
-    ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetFull'].includes(S.colorStyle) ? `
-      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
+    ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? `
+      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
       ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${fixedWidthOutlines ? '' : directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect width="1200" height="1800" fill="${artistTypeFill}"/></g>
-      ${mixedArtist ? `<rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/>` : ''}
+      ${mixedArtist ? `<g${cornerArtwork !== null ? ' mask="url(#lt)"' : ''}><rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/></g>` : ''}
       ${fixedWidthOutlines ? directArtworkEdge : ''}
       ${S.colorStyle === 'screenprint' ? items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('') : ''}
     ` : `
@@ -1703,6 +1723,8 @@
       $('hood').value = S.hood;
       $('colorStyle').value = S.colorStyle;
       $('vectorOutlines').checked = S.vectorOutlines;
+      $('cornerRadius').value = S.cornerRadius ?? 8;
+      $('cornerRadiusValue').value = S.cornerRadius ?? 8;
       $('latitude').value = S.latitude ?? '';
       $('longitude').value = S.longitude ?? '';
       $('yr').value = $('yn').value = S.years;
@@ -1729,13 +1751,14 @@
       $('hideFooter').setAttribute('aria-pressed', String(S.hideFooter));
       $('shuffleColors').disabled = S.genres.length < 2;
       $('shuffleColors').title = S.genres.length < 2 ? 'Select at least two genres to swap color placement.' : 'Reassign the selected colors to different parts of the postcard.';
+      $('genreOrder').textContent = 'Color order: ' + S.genres.map(i => GENRES[i][0]).join(' → ');
       [...$('gen').children].forEach((b, i) => {
         b.classList.toggle('on', S.genres.includes(i));
         b.setAttribute('aria-pressed', String(S.genres.includes(i)));
       });
     }
     const load = p => {
-      S = JSON.parse(JSON.stringify({...DEF, ...p, colorStyle: S.colorStyle, vectorOutlines: S.vectorOutlines, latitude: p.latitude ?? null, longitude: p.longitude ?? null}));
+      S = JSON.parse(JSON.stringify({...DEF, ...p, colorStyle: S.colorStyle, vectorOutlines: S.vectorOutlines, cornerRadius: S.cornerRadius, latitude: p.latitude ?? null, longitude: p.longitude ?? null}));
       updateNeighborhoodCoordinates();
       sync();
       draw()
@@ -1785,6 +1808,10 @@
     bind('addr', e => S.addr = e.value);
     bind('hood', e => { S.hood = e.value; updateNeighborhoodCoordinates(); });
     bind('colorStyle', e => S.colorStyle = e.value);
+    bind('cornerRadius', e => {
+      S.cornerRadius = +e.value;
+      $('cornerRadiusValue').value = e.value;
+    });
     bind('vectorOutlines', e => S.vectorOutlines = e.checked);
     bind('artistType', e => S.artistType = e.value);
     bind('independent', e => S.independent = e.value === '' ? null : e.value === 'yes');

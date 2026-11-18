@@ -80,5 +80,20 @@ function testVectorOffsets() {
     paths.find(p => ClipperLib.Clipper.Area(p) < 0))));
   assert(holeAreas[0] === 14*14 && holeAreas[1] === 8*8,
     'Ink and gap use consistent three-unit interior offsets');
+  // Offset unions create new corners where separate glyphs meet.
+  const meeting = rectangle + '<path d="M 110 40 H 210 V 140 H 110 Z"/>',
+    sharpMeeting = vectorOffsetPaths(meeting,[12],'sharp',16)[0],
+    roundMeeting = vectorOffsetPaths(meeting,[12],'round',16)[0];
+  const maxTurn = d => Math.max(...decode(d).flatMap(points => points.map((p,i) => {
+    const a = points[(i+points.length-1)%points.length], b = points[(i+1)%points.length],
+      ax = p.X-a.X, ay = p.Y-a.Y, bx = b.X-p.X, by = b.Y-p.Y;
+    return Math.abs(Math.atan2(ax*by-ay*bx, ax*bx+ay*by));
+  })));
+  assert(maxTurn(roundMeeting) < Math.PI/4 && maxTurn(sharpMeeting) >= Math.PI/2,
+    'Rounded style also rounds new anchors formed by offset unions');
+  assert(vectorOffsetPaths(meeting,[12],'round',2)[0] !== roundMeeting,
+    'Corner radius remains adjustable after union cleanup');
+  assert(vectorOffsetPaths(meeting,[12],'round',16)[0] === roundMeeting,
+    'Corner mode and radius changes invalidate the cache correctly');
   return 'PASS: sharp corners, smooth curves, spacing, union, counters, clips, transforms, cache, acute joins, nested repetitions';
 }
