@@ -36,10 +36,13 @@
       .genre-order { display: block; margin: 8px 0; }
       .b:disabled { opacity: .45; cursor: default; }
       .actions { display: flex; align-items: center; gap: 7px; margin-top: 5px; }
+      .actions .b { background: #414141; border-color: #414141; color: #fff; }
+      .actions .b:hover { background: #292929; border-color: #292929; }
       .preview { display: flex; justify-content: flex-end; align-items: flex-start; min-width: 0; padding-top: 4px; }
       #pv { width: min(100%, calc((100svh - 80px) * 2 / 3)); aspect-ratio: 2 / 3; background: transparent; }
       #pv svg { display: block; width: 100%; height: 100%; }
       .advanced { border-top: 1px solid #aaa; padding: 28px 0 48px; }
+      .extra-customizations .primary { max-width: 410px; }
       h2 { margin: 0 0 22px; font-size: 19px; font-weight: 400; }
       .advanced-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; }
       .row { display: flex; gap: 10px; align-items: center; }
@@ -94,26 +97,39 @@
           <label for="hood">Neighborhood<input id="hood" type="text" list="neighborhoodOptions"/><datalist id="neighborhoodOptions"></datalist></label>
           <div class="paired">
             <label for="opened">Year Opened<input id="opened" type="number" inputmode="numeric"/></label>
-            <label for="cn2">Capacity<input id="cn2" max="40000" min="30" type="number" inputmode="numeric"/></label>
+            <label for="cn2">Capacity<input id="cn2" max="250000" min="30" type="number" inputmode="numeric"/></label>
           </div>
-          <label for="ticketPrice">Average Ticket Price ($)<span class="hint">Gradient outline: controls band height. Ticket lightness style: free venues use the original colors; higher prices lighten them toward white, up to 50% at $200+.</span><input id="ticketPrice" type="number" min="0" step="0.01" inputmode="decimal"/></label>
+          <label for="ticketPrice">Average Ticket Price ($)<input id="ticketPrice" type="number" min="0" step="0.01" inputmode="decimal"/></label>
           <div class="paired">
             <label for="artistType">Artist Type<select id="artistType"><option value="local">Local</option><option value="touring">Touring</option><option value="mixed">Mixed</option></select></label>
-            <label for="independent">Independent<select id="independent"><option value="">Select…</option><option value="yes">Yes</option><option value="no">No</option></select></label>
+            <label for="independent">Independent<select id="independent"><option value="">Select…</option><option value="yes" selected>Yes</option><option value="no">No</option></select></label>
           </div>
+          <label for="venueStatus">Venue Status<select id="venueStatus"><option value="">Select…</option><option value="Open!" selected>Open</option><option value="Saved">Saved</option><option value="For Sale / At Risk">For Sale / At Risk</option></select></label>
           <fieldset><legend>Venue Type</legend><div class="chips" id="type" role="group" aria-label="Venue type"></div></fieldset>
           <fieldset>
             <legend>Genres <span class="hint">(pick 1–3)</span></legend>
             <div class="chips" id="gen" role="group" aria-label="Genres"></div>
-            <output id="genreOrder" class="genre-order hint" aria-live="polite"></output>
-            <button type="button" class="b" id="shuffleColors" aria-describedby="genreShuffleHint">Shuffle genre order</button>
-            <p id="genreShuffleHint" class="hint">Swap where the selected genre colors appear in the postcard.</p>
+            <div hidden>
+              <output id="genreOrder" class="genre-order hint" aria-live="polite"></output>
+              <button type="button" class="b" id="shuffleColors" aria-describedby="genreShuffleHint">Shuffle genre order</button>
+              <p id="genreShuffleHint" class="hint">Swap where the selected genre colors appear in the postcard.</p>
+            </div>
           </fieldset>
+        </aside>
+        <main class="preview" aria-label="Postcard preview"><div id="pv"></div></main>
+      </section>
+      <section class="advanced extra-customizations" aria-labelledby="extra-customizations-title">
+        <h2 id="extra-customizations-title">extra customizations</h2>
+        <div class="primary">
           <label class="check"><input id="colorGrid" type="checkbox"/>Show grid, composition &amp; color placement</label>
           <div id="compositionRules" class="hint" hidden></div>
           <label for="colorStyle">Color style
             <select id="colorStyle">
-              <option value="offsetGradient">Offset outlines + gradient background</option>
+              <option value="offsetGradient" hidden disabled>Offset outlines + gradient background</option>
+              <option value="offsetGradientSeparate" hidden disabled>Offset outlines + separate type color</option>
+              <option value="offsetVenueTraits" hidden disabled>Price rounding + gradient background</option>
+              <option value="offsetOwnershipRounding" hidden disabled>Ownership rounding + artist type fill</option>
+              <option value="offsetPriceArtistFill" selected>Price rounding + artist type fill</option>
             </select>
           </label>
           <label class="check"><input id="vectorOutlines" type="checkbox"/>Use vector outlines</label>
@@ -126,14 +142,21 @@
               <option value="3">Split words across containers</option>
             </select>
           </label>
+          <label for="splitContainers">Split-word containers
+            <select id="splitContainers" disabled>
+              <option value="0">Layout default</option>
+              <option value="2">2 containers</option>
+              <option value="3">3 containers</option>
+              <option value="4">4 containers</option>
+            </select>
+          </label>
           <label for="cornerRadius">Type corner radius <output id="cornerRadiusValue">8</output>
             <input id="cornerRadius" type="range" min="0" max="40" step="1" value="8"/>
           </label>
-          <p class="hint">Rounds sharp type anchors in offset styles without changing the selected style. Zero keeps the original corners.</p>
-        </aside>
-        <main class="preview" aria-label="Postcard preview"><div id="pv"></div></main>
+          <p class="hint">Ticket price sets the corner radius, from 40 for free venues to 0 at $250 and above.</p>
+        </div>
       </section>
-      <section class="advanced" aria-labelledby="advanced-title">
+      <section class="advanced" aria-labelledby="advanced-title" hidden>
         <h2 id="advanced-title">More controls</h2>
         <div class="advanced-grid">
           <div class="wide"><label>Presets</label><div class="chips" id="pre"></div></div>
@@ -145,9 +168,9 @@
             </div>
             <p id="locationStatus" class="hint" role="status"></p>
             <p class="hint">Coordinates come from your neighborhood spreadsheet. Choose a suggested neighborhood; all venues in that neighborhood share its color anchor.</p>
-            <p class="hint">Capacity controls the number of offset outlines. Selected genre colors form the background gradient, and ticket price controls the height of its color bands.</p>
+            <p class="hint">Capacity controls the number of offset outlines. Above 40,000, up to eight extra outlines are added at the same spacing. Selected genre colors form the background gradient, and ticket price controls the height of its color bands.</p>
           </div>
-          <label>Capacity (log scale)<input id="cr" max="1000" min="0" type="range"/></label>
+          <label>Capacity (log scale)<input id="cr" max="1255" min="0" type="range"/></label>
         <label class="check">
           <input id="swap" type="checkbox"/>
           Swap name words 1 &amp; 2 (top ↔ left)
@@ -181,7 +204,7 @@
           </span>
         </label>
         <label>
-          Postcard texture (Screen · 70%)
+          Postcard texture (Screen · 60%)
           <input id="texture" type="file" accept="image/png,image/jpeg,image/webp"/>
           <span class="hint">Applied to every postcard and included in exports.</span>
         </label>
@@ -260,25 +283,34 @@
       ['Night club', 1, 'nightClub'],
       ['Concert hall / Theater', 1, 'concertHall'],
       ['Bar', 1, 'bar'],
-      ['Arena', 1, 'arena'],
-      ['Third space', 1, 'thirdSpace'],
+      ['Arena', 1, 'arenaV4'],
+      ['Third space', 1, 'thirdSpaceV2'],
       ['Outdoors', 1, 'outdoors'],
-      ['Silly', 1, 'silly'],
-      ['Third space v2', 1, 'thirdSpaceV2'],
-      ['Arena v2', 1, 'arenaV2'],
-      ['Arena v3', 1, 'arenaV3']
-    ]; // [name, implemented, grid key]
+      ['Silly', 1, 'silly', true],
+      ['Third space v2', 1, 'thirdSpaceV2', true],
+      ['Arena v2', 1, 'arenaV2', true],
+      ['Arena v3', 1, 'arenaV3', true],
+      ['Third space v3', 1, 'thirdSpaceV3', true],
+      ['Third space v4', 1, 'thirdSpaceV4', true],
+      ['Restaurant', 1, 'restaurant'],
+      ['Arena v4', 1, 'arenaV4', true],
+      ['Arena v1', 1, 'arena', true],
+      ['Third space v1', 1, 'thirdSpace', true]
+    ]; // [name, implemented, grid key, hidden]
     const GENRES = [
-      ['pop', '#ff008d'],
-      ['rock', '#ff180c'],
-      ['hip hop', '#ffd016'],
-      ['punk', '#7310b1'],
+      ['pop', '#ff0085'],
+      ['rock', '#ff0e00'],
+      ['hip hop', '#ffcc0a'],
+      ['punk', '#7610ab'],
       ['mixed', '#0095d5'],
-      ['experimental', '#08c884'],
-      ['classical', '#e66b00'],
-      ['electronic', '#96df0a'],
-      ['jazz', '#2a4bff'],
-      ['latin', '#d95dd3']
+      ['experimental', '#0bc681'],
+      ['classical', '#9e7cff'],
+      ['electronic', '#9cdf08'],
+      ['jazz', '#0295cc'],
+      ['latin', '#d75acb'],
+      ['blues', '#2b48f8'],
+      ['r&b/soul', '#279708'],
+      ['folk', '#ff7500']
     ];
     const CFG = {
       fill: .9,
@@ -289,7 +321,8 @@
       stroke: 1.2,
       tint: .55,
       ink: '#1a0a1f',
-      keyline: 40,
+      keyline: 0,
+      artworkScale: 1.03,
       footerY: 1680,
       footerSize: 40
     };
@@ -390,6 +423,16 @@
               naturalLength: true, align: 'center'}
           ];
         }
+      },
+      restaurant: {
+        frame: {x: 90, y: 75, w: 1020, h: 1640},
+        wordOrder: [0, 1, 2, [3, 4, 5]],
+        slots: () => [
+          {x: 90, y: 402, w: 680, h: 259, rot: 0},
+          {x: 434, y: 661, w: 676, h: 279, rot: 0},
+          {x: 248, y: 940, w: 695, h: 279, rot: 0},
+          {x: 430, y: 273, w: 510, h: 129, rot: 0, naturalLength: true, align: 'right'}
+        ]
       },
       thirdSpace: {
         frame: {x: 90, y: 75, w: 1020, h: 1640},
@@ -561,6 +604,57 @@
         }
       }
     };
+    GRIDS.arenaV4 = {
+      ...GRIDS.arenaV3,
+      slots: g => {
+        const [top, bottom, leftAddress, rightAddress] = GRIDS.arenaV3.slots(g);
+        const frame = GRIDS.arenaV3.frame;
+        const inset = 38;
+        const addressInset = 14;
+        const x = frame.x + inset;
+        const w = frame.w - 2 * inset;
+        const arcWidth = top.w + .28 * (frame.w - top.w);
+        return [
+          {...top, x, w, arcWidth},
+          {...bottom, x, w, arcWidth},
+          {...leftAddress, x: leftAddress.x + addressInset},
+          {...rightAddress, x: rightAddress.x - addressInset}
+        ];
+      }
+    };
+    const thirdSpaceLift = 150;
+    GRIDS.thirdSpaceV3 = {
+      ...GRIDS.thirdSpaceV2,
+      slots: g => {
+        const [first, second, third, address] = GRIDS.thirdSpaceV2.slots(g);
+        const bottomTrim = 35 * g;
+        const bottomAmplitude = 100 * g;
+        const cornerOffset = (thirdSpaceLift + bottomTrim) / bottomAmplitude;
+        return [
+          {...first, y: first.y - thirdSpaceLift},
+          {...second, y: second.y - thirdSpaceLift},
+          {...third, y: third.y - thirdSpaceLift, h: third.h - bottomTrim,
+            bottomAmplitude,
+            bottomProfile: [[0, -.5], [.48, .55], [.62, .65], [1, cornerOffset]]},
+          address
+        ];
+      },
+      footerY: g => GRIDS.thirdSpaceV2.footerY(g) - thirdSpaceLift
+    };
+    GRIDS.thirdSpaceV4 = {
+      ...GRIDS.thirdSpaceV3,
+      slots: g => {
+        const [first, second, third] = GRIDS.thirdSpaceV3.slots(g);
+        const {x, y, w} = GRIDS.thirdSpaceV3.frame;
+        const addressGrowth = Math.min(g, 1.1);
+        return [
+          first, second, third,
+          {envelope: true, flowing: true, x, y, w, h: 220 * addressGrowth,
+            amplitude: 0, phase: 0, bottomAmplitude: 100 * addressGrowth,
+            bottomProfile: [[0, .3], [.4, -.8], [1, .85]]}
+        ];
+      }
+    };
     const activeGrid = () => GRIDS[VENUE_TYPES[S.type]?.[2]] || GRIDS.club;
     const RAND = [
       ["Bottom of the Hill", "1233 17th St", "Potrero Hill"],
@@ -593,18 +687,20 @@
       cap: 300,
       ticketPrice: 30,
       artistType: 'mixed',
-      independent: null,
+      independent: true,
+      venueStatus: 'Open!',
       type: 0,
       genres: [3],
       seed: 0,
       grain: 60,
-      colorStyle: "offsetGradient",
+      colorStyle: "offsetPriceArtistFill",
       vectorOutlines: true,
       cornerRadius: null,
       latitude: null,
       longitude: null,
       guides: false,
       pack: 1,
+      splitContainers: 0,
       swap: false,
       spread: 0,
       slab: 0,
@@ -640,6 +736,31 @@
     // Group short words, then reduce to the number of name slots in the selected grid.
     function splitName(name, c = CFG) {
       let g = name.trim().toUpperCase().split(/\s+/).filter(Boolean);
+      const count = c.nameSlots || 3;
+      if (count >= 3 && /^MR\.? TIPPLE['’]?S JAZZ CLUB$/.test(g.join(' '))) {
+        return [g.slice(0, 2).join(' '), g[2], g[3], ...Array(count - 3).fill('')];
+      }
+      if (count >= 3 && /^LION['’]?S DEN BAR AND LOUNGE$/.test(g.join(' '))) {
+        return [g.slice(0, 2).join(' '), g.slice(2, 4).join(' '), g[4], ...Array(count - 3).fill('')];
+      }
+      if (count >= 3 && g.join(' ') === 'MUSIC CITY STARFACTORY') {
+        return ['MUSIC CITY', 'STAR', 'FACTORY', ...Array(count - 3).fill('')];
+      }
+      if (count === 4 && /^FEINSTEIN['’]?S AT THE NIKKO$/.test(g.join(' '))) {
+        return [g[0].slice(0, 4), g[0].slice(4), g.slice(1, 3).join(' '), g[3]];
+      }
+      if (count === 4 && g.join(' ') === 'SF CONSERVATORY OF MUSIC') {
+        return ['SF CON', 'SERVATORY', 'OF', 'MUSIC'];
+      }
+      if (count === 4 && g.join(' ') === 'THE FILLMORE') {
+        return ['TH', 'E', 'FILL', 'MORE'];
+      }
+      if (count === 4 && g.join(' ') === 'DAVIES SYMPHONY HALL') {
+        return ['DAV', 'IES', 'SYMPHONY', 'HALL'];
+      }
+      if (c.splitWords && count >= 3 && g.join(' ') === 'TEMPLE NIGHTCLUB') {
+        return ['TEMPLE', 'NIGHT', 'CLUB', ...Array(count - 3).fill('')];
+      }
       const len = s => s.replace(/ /g, '').length;
       const minPair = () => {
         let b = 0,
@@ -659,7 +780,6 @@
         if (m >= c.packBelow) break;
         merge(b)
       } // pack short words
-      const count = c.nameSlots || 3;
       while (g.length > count) merge(minPair()[0]);
       if (c.splitWords && g.length < count) {
         // Allocate extra containers to the longest words before dividing them evenly.
@@ -725,14 +845,21 @@
         sy = thickness / (y1 - y0 || 1),
         // CCW words finish at the upper corner and extend downward as they grow.
         offset = slot.align === 'center' ? (length - width * sx) / 2 :
-          slot.naturalLength && slot.rot < 0 ? length - width * sx : 0;
+          slot.align === 'right' || (slot.naturalLength && slot.rot < 0) ? length - width * sx : 0;
       return `translate(${offset} 0) scale(${sx} ${sy}) translate(${-x0} ${-y0})`;
     }
     // Follow font curves closely in postcard units; retain the original straight edges.
-    function fontOutlinePath(commands, sx, sy) {
-      const tolerance = .25, contours = [];
+    function fontOutlinePath(commands, sx, sy, warp) {
+      const tolerance = .06, contours = [];
       let points = [], current;
       const scaled = (x, y) => ({x: x * sx, y: y * sy});
+      const addLine = (start, end) => {
+        const steps = warp ? Math.max(1, Math.ceil(Math.abs(end.x - start.x) / 2)) : 1;
+        for (let i = 1; i <= steps; i++) {
+          const t = i / steps;
+          points.push({x: start.x + (end.x - start.x) * t, y: start.y + (end.y - start.y) * t});
+        }
+      };
       const distance = (p, a, b) => {
         const dx = b.x - a.x, dy = b.y - a.y;
         const t = Math.max(0, Math.min(1,
@@ -750,6 +877,11 @@
           .concat(simplify(list.slice(index))) : [list[0], list[list.length-1]];
       };
       const finish = () => {
+        if (warp && points.length > 1) {
+          addLine(points[points.length - 1], points[0]);
+          points.pop();
+          points = points.map(warp);
+        }
         if (points.length < 3) { points = []; return; }
         // Split a closed ring at its farthest vertex to preserve both sides.
         let split = 1;
@@ -759,14 +891,17 @@
         }
         const ring = simplify(points.slice(0, split+1)).slice(0, -1)
           .concat(simplify(points.slice(split).concat(points[0])).slice(0, -1));
-        contours.push('M ' + ring.map(p => `${(p.x/sx).toFixed(3)} ${(p.y/sy).toFixed(3)}`).join(' L ') + ' Z');
+        contours.push('M ' + ring.map(p => `${(warp ? p.x : p.x/sx).toFixed(3)} ${(warp ? p.y : p.y/sy).toFixed(3)}`).join(' L ') + ' Z');
         points = [];
       };
       for (const c of commands) {
         if (c.type === 'Z') { finish(); continue; }
         const end = scaled(c.x, c.y);
         if (c.type === 'M') { finish(); points = [end]; }
-        else if (c.type === 'L') points.push(end);
+        else if (c.type === 'L') {
+          if (warp) addLine(current, end);
+          else points.push(end);
+        }
         else if (c.type === 'Q' || c.type === 'C') {
           const start = current, a = scaled(c.x1, c.y1),
             b = c.type === 'C' ? scaled(c.x2, c.y2) : a;
@@ -791,7 +926,7 @@
     }
     // returns array of fn(extraAttrs)->svg markup (one per glyph)
     // Fit text into a grid slot. Loaded fonts produce glyph paths; the fallback uses SVG text.
-    function setText(s, text) {
+    function setText(s, text, warp) {
       if (!text) return [];
       const L = s.rot ? s.h : s.w,
         T = s.rot ? s.w : s.h;
@@ -876,14 +1011,24 @@
         return path;
       }).filter(path => path.commands.length);
       const boxes = paths.map(path => path.getBoundingBox()),
-        x0 = Math.min(...boxes.map(b => b.x1)),
-        x1 = Math.max(...boxes.map(b => b.x2)),
+        firstBox = boxes[0], lastBox = boxes[boxes.length - 1],
+        x0 = s.splitGlyph === 'right' ? (firstBox.x1 + firstBox.x2) / 2 : Math.min(...boxes.map(b => b.x1)),
+        x1 = s.splitGlyph === 'left' ? (lastBox.x1 + lastBox.x2) / 2 : Math.max(...boxes.map(b => b.x2)),
         y0 = Math.min(...boxes.map(b => b.y1)),
         y1 = Math.max(...boxes.map(b => b.y2)),
         fit = textFit(s, x0, x1, y0, y1);
       const sharedScale = s.sharedFit ? Math.min(L/s.sharedFit.width,T/s.sharedFit.height) : null,
         fitX = sharedScale ?? (s.naturalLength ? Math.min(1, L / (x1-x0 || 1)) : L / (x1-x0 || 1)),
         fitY = sharedScale ?? T / (y1-y0 || 1);
+      if (warp) {
+        const warpPoint = p => warp(p.x - x0 * fitX, p.y - y0 * fitY);
+        const outlines = paths.map(path => fontOutlinePath(path.commands, fitX, fitY, warpPoint));
+        if (!s.splitGlyph) return outlines.map(outline => ex => `<path ${ex} transform="${tf}" d="${outline}"/>`);
+        return [ex => {
+          const id = `split-glyph-${typeClipId++}`;
+          return `<g transform="${tf}"><defs><clipPath id="${id}"><rect x="0" y="-${T}" width="${L}" height="${3 * T}"/></clipPath></defs><g clip-path="url(#${id})">${outlines.map(outline => `<path ${ex} d="${outline}"/>`).join('')}</g></g>`;
+        }];
+      }
       return paths.map(path => {
         let outline;
         return ex => {
@@ -1027,7 +1172,7 @@
     // Keep the inner wave while stretching the outer edge to the frame.
     function envelopeBounds(slot, x) {
       if (slot.stadiumCap) {
-        const dx = x-slot.w/2,
+        const dx = (x / slot.w - .5) * (slot.arcWidth ?? slot.w),
           outer = Math.sqrt(Math.max(0, slot.radius*slot.radius-dx*dx)),
           inner = Math.sqrt(Math.max(0, slot.innerRadius*slot.innerRadius-dx*dx));
         if (slot.outsideStadium) return slot.stadiumCap === 'top' ? {
@@ -1061,6 +1206,14 @@
     }
     function setWaveText(slot, text) {
       if (!text) return [];
+      if (DF) {
+        return setText({...slot, rot: 0}, text, (x, y) => {
+          if (!slot.envelope) return {x, y: y + waveOffset(slot, x)};
+          const {top, bottom} = envelopeBounds(slot, x);
+          return {x, y: top + (bottom - top) * y / slot.h};
+        });
+      }
+      // Live fallback text uses slices until the vector font is available.
       const source = setText({x: 0, y: 0, w: slot.w, h: slot.h, rot: 0}, text),
         slices = slot.envelope || slot.flowing ? 512 : 128,
         step = slot.w / slices;
@@ -1122,12 +1275,11 @@
       return `<rect x="${slot.x}" y="${slot.y}" width="${slot.w}" height="${slot.h}" ${attrs}/>`;
     }
     // Align footer labels using font advance widths when exporting outlined text.
-    function footer() {
+    function footer(k = CFG.ink) {
       if (S.hideFooter) return '';
       const grid = activeGrid(),
         y = grid.footerY ? grid.footerY(typeGrowth()) : CFG.footerY,
-        sz = CFG.footerSize,
-        k = CFG.ink;
+        sz = CFG.footerSize;
       const frame = grid.frame,
         inset = 24;
       return [
@@ -1184,6 +1336,7 @@
       })
     };
     const tint = (h, t = CFG.tint) => {
+      if (S.artistType === 'local') return h;
       const n = parseInt(h.slice(1), 16);
       return '#' + [16, 8, 0].map(s => Math.round(((n >> s) & 255) * (1 - t) + 255 * t).toString(16)
         .padStart(2, '0')).join('')
@@ -1312,17 +1465,20 @@
               return `<path d="M ${cx} ${y} L ${x+w} ${cy} L ${cx} ${y+h} L ${x} ${cy} Z"/>`;
             case 'concertHall':
               return `<path d="M ${x} ${y+h} V ${y+w*.5} A ${w/2} ${w/2} 0 0 1 ${x+w} ${y+w*.5} V ${y+h}"/>`;
+            case 'arenaV4':
             case 'arenaV3':
             case 'arenaV2':
             case 'arena': {
               const radius = 490 * scale,
-                straight = (['arenaV2', 'arenaV3'].includes(type) ? 240 : 465) * scale,
-                center = ['arenaV2', 'arenaV3'].includes(type) ? 895 : 817.5,
+                straight = (['arenaV2', 'arenaV3', 'arenaV4'].includes(type) ? 240 : 465) * scale,
+                center = ['arenaV2', 'arenaV3', 'arenaV4'].includes(type) ? 895 : 817.5,
                 upper = center - straight / 2, lower = center + straight / 2;
               return `<path d="M ${600-radius} ${upper} A ${radius} ${radius} 0 0 1 ${600+radius} ${upper} V ${lower} A ${radius} ${radius} 0 0 1 ${600-radius} ${lower} Z"/>`;
             }
             case 'thirdSpace':
             case 'thirdSpaceV2':
+            case 'thirdSpaceV3':
+            case 'thirdSpaceV4':
               return `<path d="M ${x} ${y+h} V ${y+h*.25} L ${cx} ${y} L ${x+w} ${y+h*.25} V ${y+h}"/>`;
             case 'outdoors': {
               // Evenly spaced semicircular seating tiers share a stage center.
@@ -1343,7 +1499,7 @@
         // preserving quadrant symmetry. Mirror the bands around the motif's
         // actual center, including the lower club tunnel and stadium center.
         const halfCount = 2 + Math.round(24 * density),
-          centerY = type === 'outdoors' ? 510 : ['arenaV2', 'arenaV3'].includes(type) ? 895 : type === 'arena' ? 817.5 : type === 'club' ?
+          centerY = type === 'outdoors' ? 510 : ['arenaV2', 'arenaV3', 'arenaV4'].includes(type) ? 895 : type === 'arena' ? 817.5 : type === 'club' ?
             (slots[1].y + slots[1].h + 35 + frame.y + frame.h - 190) / 2 :
             frame.y + frame.h / 2,
           halfSpan = Math.max(centerY, 1800 - centerY),
@@ -1452,11 +1608,15 @@
       club: 'Name across the top and down both sides; address wraps the inner opening.',
       nightClub: 'Outer address band wraps the inner three-sided name; name keeps its natural length.',
       bar: 'Three centered name bands step inward with decreasing heights; address sits above.',
+      restaurant: 'A right-aligned address sits above three staggered name blocks, flush left, flush right, then centered.',
       thirdSpace: 'Three name bands grow downward in height and stay anchored to the bottom; address sits above.',
       thirdSpaceV2: 'Three wavy name envelopes share flowing boundaries, grow in height, and stay anchored to the bottom; address sits above.',
+      thirdSpaceV3: 'Three wavy name envelopes sit slightly higher on the postcard, with the address above.',
+      thirdSpaceV4: 'The address spans the top of the frame with a flat upper edge and a curved lower edge.',
       arena: 'Full venue name repeats on the inner upper and lower arcs; address follows the outer arcs.',
       arenaV2: 'First title word fills the envelope above the outer stadium arc; the second fills below it. Addresses follow a separate inner stadium ring; title envelopes extend to the inside border.',
       arenaV3: 'Narrower centered title envelopes curve above and below the stadium; straight vertical addresses sit against the inside side borders.',
+      arenaV4: 'Rounded title envelopes sit inset from both sides of the inner frame, with straight vertical addresses along the sides.',
       concertHall: 'Four name slots form two columns of waves; address spans the top envelope.',
       silly: 'Paired name words and the address fill three flush wave bands; adjacent layers share the same boundary curve.',
       outdoors: 'First and third name words stretch from the inner waves to the top and bottom frame edges; address sits above the lower name bands.'
@@ -1502,38 +1662,75 @@
         ${point.located ? `<g fill="none" stroke="#ffee00" stroke-width="5"><circle cx="${point.x}" cy="${point.y}" r="22"/><path d="M ${point.x-40} ${point.y} h 80 M ${point.x} ${point.y-40} v 80"/></g>` : ''}
         <rect x="20" y="20" width="1160" height="80" fill="#111" opacity=".85"/><text x="40" y="53" fill="#00dfff" font-size="24">${esc(label)}</text><text x="40" y="84" fill="white" font-size="22">${outside ? 'Venue outside SF extent — marker is off postcard.' : 'SF coordinate grid · yellow: neighborhood · cyan: color · magenta: composition'}</text></g>`;
     }
+    const usesPriceRounding = () => ['offsetVenueTraits', 'offsetPriceArtistFill'].includes(S.colorStyle);
+    const usesOwnershipRounding = () => S.colorStyle === 'offsetOwnershipRounding';
+    const typeCornerRadius = () => usesOwnershipRounding() ? (S.independent === true ? 40 : 0) : usesPriceRounding() ?
+      Math.round(40 * (1 - Math.min(250, Math.max(0, S.ticketPrice || 0)) / 250)) :
+      S.cornerRadius ?? 8;
+    function venueNameSlots(grid) {
+      const count = grid.nameSlots || 3;
+      const slots = splitName(S.name, {
+        ...CFG,
+        packBelow: CFG.packLevels[S.pack] ?? 0,
+        splitWords: S.pack === 3,
+        nameSlots: S.pack === 3 && S.splitContainers ? Math.min(count, S.splitContainers) : count
+      });
+      while (slots.length < count) slots.push('');
+      if (S.swap) [slots[0], slots[1]] = [slots[1], slots[0]];
+      return slots;
+    }
+
     // Compose the postcard from gradients, grain, clipping masks, outlined lettering, and footer.
-    function build(preview = false) {
+    function build(preview = false, rasterSize = null) {
+      const statusBorder = S.venueStatus === 'For Sale / At Risk' ? 12 : S.venueStatus === 'Saved' ? 6 : 0;
+      const hasOwnershipBorder = S.colorStyle === 'offsetPriceArtistFill' && S.independent === false;
+      const ownershipBorder = hasOwnershipBorder ? 32 : 0;
+      const statusBorderInset = ownershipBorder + statusBorder / 2;
+      const usesArtistFill = usesOwnershipRounding() || S.colorStyle === 'offsetPriceArtistFill';
+      const automaticCorners = usesPriceRounding() || usesOwnershipRounding();
+      const repeatingTypeFill = usesArtistFill && ['local', 'mixed'].includes(S.artistType);
+      const reversedTypeOutline = usesArtistFill && S.artistType === 'local';
+      const joinTypeToFrame = S.colorStyle === 'offsetGradient';
+      const directTypeStroke = joinTypeToFrame || usesArtistFill;
+      const separateTypeColor = S.colorStyle === 'offsetGradientSeparate';
+      const hasGradientBackground = automaticCorners || separateTypeColor ||
+        ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle);
+      const hasOffset = hasGradientBackground || S.colorStyle === 'offset';
       // Export real geometry even when the preview uses filter outlines.
-      const adjustableCorners = S.colorStyle === 'offsetGradientCorners' ||
-        (S.cornerRadius != null && ['offset', 'offsetGradient', 'offsetGradientLightness', 'offsetFull'].includes(S.colorStyle));
+      const adjustableCorners = automaticCorners || S.colorStyle === 'offsetGradientCorners' ||
+        (S.cornerRadius != null && hasOffset);
       const useVectorOutlines = S.vectorOutlines || !preview || adjustableCorners;
       colorPlacement = [];
       typeClipId = 0;
       const G = activeGrid(),
         f = G.frame,
+        frameJoinReach = 6,
+        frameJoinBand = 2 * frameJoinReach,
         k = CFG.ink,
         sw = CFG.stroke;
+      const equalFrameSpacing = usesArtistFill;
+      const artworkScaleY = CFG.artworkScale * (equalFrameSpacing ? .98 : 1);
+      const artworkScaleX = equalFrameSpacing ? (1200 - (1800 - f.h * artworkScaleY)) / f.w : artworkScaleY;
+      const artworkCenterY = equalFrameSpacing ? f.y + f.h / 2 : 900;
       const ad = S.addr.trim().toUpperCase().split(/\s+/).filter(Boolean);
-      const nm = splitName(S.name, {
-        ...CFG,
-        packBelow: CFG.packLevels[S.pack] ?? 0,
-        splitWords: S.pack === 3,
-        nameSlots: G.nameSlots || 3
-      });
-      if (S.swap)[nm[0], nm[1]] = [nm[1], nm[0]]; // swap name words 1 & 2
+      const nameSlots = G.nameSlots || 3;
+      const nm = venueNameSlots(G);
       const words = [...nm, ad[0] || '', ad[1] || '', ad[2] || ''];
+      const splitFillmoreH = DF && G === GRIDS.concertHall && nm[0] === 'TH' && nm[1] === 'E' &&
+        nm[2] === 'FILL' && nm[3] === 'MORE';
       const SL = G.slots(typeGrowth()),
         order = G.wordOrder || [0, 1, 2, 3, 4, 5],
         items = SL.flatMap((slot, i) => {
           const indices = Array.isArray(order[i]) ? order[i] : [order[i]],
             text = slot.fullName ? S.name.trim().toUpperCase() :
               indices.map(index => words[index]).filter(Boolean).join(' ');
-          const renderers = slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
+          const renderers = splitFillmoreH && i < 2 ?
+            setWaveText({...slot, splitGlyph: i === 0 ? 'left' : 'right'}, i === 0 ? text : 'H' + text) :
+            slot.wave || slot.envelope ? setWaveText(slot, text) : slot.radial ? setRadialText(slot, text) :
             setText({naturalLength: G.naturalLength, ...slot,
               ...(slot.sharedAddress ? {addressTexts: [ad[0] || '', ad.slice(1).join(' ')]} : {})}, text);
           return renderers.map(render => Object.assign(render, {
-            addressInk: !slot.fullName && indices.every(index => index >= (G.nameSlots || 3))
+            addressInk: !slot.fullName && indices.every(index => index >= nameSlots)
           }));
         });
       const ticketLightness = S.colorStyle === 'offsetGradientLightness' ?
@@ -1542,15 +1739,21 @@
         tint(GENRES[i][1], ticketLightness)),
         n = cols.length,
         sd = (hash(S.hood) + S.seed) % 1000; // seed = neighborhood hash + manual offset
-      const hasOffset = ['offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle);
-      const solidTypeColor = ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? tint(cols[0], .12) : cols[0];
-      const mixedArtist = hasOffset && S.artistType === 'mixed';
-      const fixedWidthOutlines = hasOffset && useVectorOutlines && !!DF && VENUE_TYPES[S.type]?.[2] === 'arenaV3';
-      const artistTypeFill = hasOffset && S.artistType === 'touring' ? 'url(#artist-type-gradient)' : mixedArtist ? cols[0] : solidTypeColor;
-      const outlineColor = hasOffset && S.artistType === 'mixed' ? cols[1] || '#ffffff' :
-        hasOffset && S.artistType === 'local' ? solidTypeColor :
-        ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? solidTypeColor : cols[2] || cols[0];
-      const offsetCount = 1 + Math.floor(9 * Math.max(0, Math.min(1, tFromCap(S.cap) / 1000))),
+      const solidTypeColor = hasGradientBackground && !separateTypeColor ? tint(cols[0], .12) : cols[0];
+      const singleColorFade = separateTypeColor && n === 1;
+      const mixedArtist = hasOffset && !separateTypeColor && !usesArtistFill && S.artistType === 'mixed';
+      const touringArtist = hasOffset && !separateTypeColor && !usesArtistFill && S.artistType === 'touring';
+      const touringOutline = usesArtistFill && S.artistType === 'touring';
+      const gradientOutline = repeatingTypeFill || singleColorFade || mixedArtist || touringArtist || touringOutline;
+      const outlineGradient = reversedTypeOutline ? 'local-type-outline' :
+        repeatingTypeFill ? 'repeating-type-gradient' : singleColorFade ? 'single-color-outline' :
+        mixedArtist ? 'mixed-address-gradient' : touringOutline ? 'touring-outline-gradient' : 'artist-type-gradient';
+      const fixedWidthOutlines = hasOffset && useVectorOutlines && !!DF &&
+        ['arenaV3', 'arenaV4'].includes(VENUE_TYPES[S.type]?.[2]);
+      const artistTypeFill = repeatingTypeFill ? 'url(#repeating-type-gradient)' : touringArtist ? 'url(#artist-type-gradient)' : mixedArtist ? cols[0] : solidTypeColor;
+      const outlineColor = mixedArtist ? cols[1] || '#ffffff' :
+        hasGradientBackground || (hasOffset && S.artistType === 'local') ? solidTypeColor : cols[2] || cols[0];
+      const offsetCount = offsetCountFromCap(S.cap),
         offsetLayers = hasOffset ? Array.from({length: offsetCount}, (_, i) => offsetCount - i) : [],
         edge = CFG.keyline,
         offsetSource = hasOffset ? `<path d="M ${edge} ${edge} H ${1200-edge} V ${1800-edge} H ${edge} Z M ${f.x} ${f.y} V ${f.y+f.h} H ${f.x+f.w} V ${f.y} Z"/>` +
@@ -1558,36 +1761,37 @@
         offsetSpecs = offsetLayers.flatMap(i => [
           [i * 12 - (fixedWidthOutlines ? 1.5 : 0), outlineColor, `offset-${i}-ink`],
           [i * 12 - 3, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5', `offset-${i}-gap`]
-        ]).concat(hasOffset ? [[fixedWidthOutlines ? 0 : 3, outlineColor, 'offset-direct-ink']] : []);
+        ]).concat(directTypeStroke ? [[fixedWidthOutlines ? 0 : 3, outlineColor, 'offset-direct-ink']] : []);
       // Keep the live-text preview while the bundled vector font is loading.
       // Once ready, paint offsets directly as paths for SVG importers such as Figma.
+      const radius = typeCornerRadius();
+      const cornerMode = adjustableCorners ? (radius > 0 ? 'round' : 'sharp') : 'auto';
       const vectorPaths = hasOffset && useVectorOutlines && DF ? vectorOffsetPaths(
-        offsetSource, offsetSpecs.map(([r]) => r),
-        adjustableCorners ? ((S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp') : 'auto', S.cornerRadius ?? 8
+        offsetSource, [...offsetSpecs.map(([r]) => r), 0], cornerMode, radius,
+        automaticCorners ? [[edge, edge, 1200 - edge, 1800 - edge], [f.x, f.y, f.x + f.w, f.y + f.h]] : null,
+        joinTypeToFrame ? [f.x, f.y, f.w, f.h, frameJoinReach] : null
       ) : null,
         offsetDefs = vectorPaths ? '' : offsetSpecs.map(([radius, color, id]) =>
           `<filter id="${id}" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800"><feMorphology in="SourceAlpha" operator="dilate" radius="${radius}" result="expanded"/><feFlood flood-color="${color}"/><feComposite in2="expanded" operator="in"/></filter>`).join(''),
         offsetUse = (id, color) => vectorPaths ? fixedWidthOutlines ?
-          `<path d="${vectorPaths[offsetSpecs.findIndex(spec => spec[2] === id)]}" fill-rule="nonzero" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="${adjustableCorners && !((S.cornerRadius ?? 8) > 0) ? 'miter' : 'round'}"/>` :
+          `<path d="${vectorPaths[offsetSpecs.findIndex(spec => spec[2] === id)]}" fill-rule="nonzero" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="${automaticCorners || cornerMode === 'sharp' ? 'miter' : 'round'}"/>` :
           `<path d="${vectorPaths[offsetSpecs.findIndex(spec => spec[2] === id)]}" fill-rule="nonzero" fill="${color}"/>` :
           `<use href="#offset-shape" filter="url(#${id})"/>`,
-        offsetArtwork = offsetLayers.map(i => (mixedArtist || S.artistType === 'touring' ?
-          vectorPaths ? offsetUse(`offset-${i}-ink`, `url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})`) :
-          `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#mixed-outline-${i})"/>` :
-          offsetUse(`offset-${i}-ink`, outlineColor)) +
-          (fixedWidthOutlines ? '' : ['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ?
+        offsetInk = id => gradientOutline ?
+          vectorPaths ? offsetUse(id, `url(#${outlineGradient})`) :
+          `<rect width="1200" height="1800" fill="url(#${outlineGradient})" mask="url(#${id}-mask)"/>` :
+          offsetUse(id, outlineColor),
+        directArtworkEdge = directTypeStroke ? offsetInk('offset-direct-ink') : '',
+        offsetArtwork = offsetLayers.map(i => offsetInk(`offset-${i}-ink`) +
+          (fixedWidthOutlines ? '' : hasGradientBackground ?
             vectorPaths ? offsetUse(`offset-${i}-gap`, 'url(#offset-background)') :
             `<rect width="1200" height="1800" fill="url(#offset-background)" mask="url(#offset-gap-${i})"/>` :
-            offsetUse(`offset-${i}-gap`, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5'))).join(''),
-        // V3 draws an actual three-unit stroke after the lettering fill.
-        // Other layouts retain their existing expanded edge beneath the fill.
-        directArtworkEdge = !hasOffset ? '' : mixedArtist || S.artistType === 'touring' ?
-          vectorPaths ? offsetUse('offset-direct-ink', `url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})`) :
-          `<rect width="1200" height="1800" fill="url(#${mixedArtist ? 'mixed-address-gradient' : 'artist-type-gradient'})" mask="url(#direct-artwork-edge)"/>` :
-          offsetUse('offset-direct-ink', outlineColor);
+            offsetUse(`offset-${i}-gap`, S.artistType === 'mixed' ? '#fffdf5' : cols[1] || '#fffdf5'))).join('');
       // Stack genre bands upward from the bottom. Price changes their height,
       // never their count; the last color fills the remaining space above.
-      const gradientPalette = cols.length > 1 ? cols : [cols[0], '#ffffff'],
+      const gradientPalette = singleColorFade ? [cols[0], '#ffffff'] : separateTypeColor ?
+        (n >= 3 ? cols.slice(1) : ['#ffffff', cols[1]]) :
+        (n > 1 ? cols : [cols[0], '#ffffff']),
         ticketScale = Math.min(1, Math.max(0, S.ticketPrice || 0) / 200),
         bandHeight = S.colorStyle === 'offsetGradientLightness' ? .27 : .12 + .30 * ticketScale,
         blendWidth = bandHeight * .45,
@@ -1598,6 +1802,8 @@
           [gradientPalette[i], boundary + blendWidth]);
       }
       priceStops.push([gradientPalette[gradientPalette.length - 1], 1]);
+      const repeatingStops = colors => [...colors, ...colors.slice(0, -1).reverse()]
+        .map((color, i) => [color, i / (2 * (colors.length - 1))]);
       // FIELD: genre colors repeated per capacity band; the spread slider randomizes band sizes
 
 
@@ -1618,22 +1824,21 @@
       const B = [...spread(L, 0, .8, prng(sp * 131 + 7919), sp ? 1 : 0), [cols[n - 1], .92],
         [tint(cols[n - 1]), 1]
       ];
-      const cornerArtwork = adjustableCorners && useVectorOutlines && DF ?
-        vectorOffsetPaths(offsetSource, [0], (S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp', S.cornerRadius ?? 8)[0] : null;
-      // The mixed-artist address is painted separately. It must use rounded
-      // geometry too, or its original anchors cover the rounded artwork below.
+      // Fill the same cleaned silhouette used to build the offsets. Raw glyphs
+      // and their slice edges can otherwise protrude through the inner outline.
+      const vectorArtwork = vectorPaths ? vectorPaths[vectorPaths.length - 1] : null;
       const addressSource = mixedArtist ? items.filter(render => render.addressInk)
-        .map(render => render(`fill="white" stroke="none"${cornerArtwork !== null ? ' data-offset-outline="true"' : ''}`)).join('') : '',
-        addressArtwork = cornerArtwork !== null && mixedArtist ?
-          `<path d="${vectorOffsetPaths(addressSource, [0], (S.cornerRadius ?? 8) > 0 ? 'round' : 'sharp', S.cornerRadius ?? 8)[0]}" fill="white" fill-rule="nonzero"/>` : addressSource;
+        .map(render => render(`fill="white" stroke="none"${vectorPaths ? ' data-offset-outline="true"' : ''}`)).join('') : '',
+        addressArtwork = vectorPaths && mixedArtist && addressSource ?
+          `<path d="${vectorOffsetPaths(addressSource, [0], cornerMode, radius)[0]}" fill="white" fill-rule="nonzero"/>` : addressSource;
       const kl = CFG.keyline,
         // The colored frame and lettering are a single silhouette. Its inner
         // contour disappears wherever a letter touches the frame.
         borderShape = `<path fill-rule="evenodd" d="M ${kl} ${kl} H ${1200-kl} V ${1800-kl} H ${kl} Z M ${f.x} ${f.y} H ${f.x+f.w} V ${f.y+f.h} H ${f.x} Z"/>`,
         guides = S.guides ? SL.map(slotGuide).join('') : '';
-      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="4in" height="6in" style="isolation:isolate"><defs>
+      return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 1800" width="${rasterSize?.width ?? '4in'}" height="${rasterSize?.height ?? '6in'}" style="isolation:isolate"><defs>
     <clipPath id="postcard-edge"><rect width="1200" height="1800" rx="0"/></clipPath>
-    ${['screenprint', 'offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? '' : ['graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? colorField('B',cols,B,f.y,f.y+f.h,0) : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
+    ${hasOffset || S.colorStyle === 'screenprint' ? '' : ['graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? colorField('B',cols,B,f.y,f.y+f.h,0) : S.colorStyle === 'hybrid' ? colorField('B',cols.length > 1 ? cols.slice(1) : cols,B,f.y,f.y+f.h,0) : colorField('A',cols,A,kl,1800-kl,0) + colorField('B',[...cols].reverse(),B,f.y,f.y+f.h,1)}
     <filter id="gr" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency=".85" numOctaves="2" seed="1" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="${S.grain}" xChannelSelector="R" yChannelSelector="G"/></filter>
     <filter id="print-noise" x="0%" y="0%" width="100%" height="100%" color-interpolation-filters="sRGB">
       <feTurbulence type="fractalNoise" baseFrequency=".72" numOctaves="3" seed="${S.seed + 1}" stitchTiles="stitch"/>
@@ -1641,6 +1846,13 @@
     </filter>
     <clipPath id="cd"><rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}"/></clipPath>
     <clipPath id="fr"><rect x="${f.x}" y="${f.y}" width="${f.w}" height="${f.h}"/></clipPath>
+    ${joinTypeToFrame && !vectorPaths ? `<clipPath id="frame-join-band"><path clip-rule="evenodd" d="M ${f.x} ${f.y} h ${f.w} v ${f.h} h ${-f.w} Z M ${f.x+frameJoinBand} ${f.y+frameJoinBand} h ${f.w-2*frameJoinBand} v ${f.h-2*frameJoinBand} h ${2*frameJoinBand-f.w} Z"/></clipPath>
+    <filter id="frame-join" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800">
+      <feMorphology in="SourceAlpha" operator="dilate" radius="${frameJoinReach}" result="expanded"/>
+      <feMorphology in="expanded" operator="erode" radius="${frameJoinReach}"/>
+    </filter>
+    <g id="frame-join-source" fill="white" stroke="none">${offsetSource}</g>
+    <g id="frame-joined"><use href="#frame-join-source"/><g clip-path="url(#frame-join-band)"><use href="#frame-join-source" filter="url(#frame-join)"/></g></g>` : ''}
     <!-- Close subpixel slice gaps before outlining and filling the shared silhouette. -->
     <filter id="solidify" filterUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" color-interpolation-filters="sRGB">
       <feMorphology in="SourceAlpha" operator="dilate" radius=".35" result="joined"/>
@@ -1653,38 +1865,52 @@
       <feComposite in="outline-ink" in2="union-edge" operator="in"/>
     </filter>
     ${offsetDefs}
-    ${hasOffset && !vectorPaths && (mixedArtist || S.artistType === 'touring') ? `<mask id="direct-artwork-edge" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse('offset-direct-ink', 'white')}</mask>` : ''}
-    ${hasOffset && !vectorPaths && ['mixed', 'touring'].includes(S.artistType) ? offsetLayers.map(i => `<mask id="mixed-outline-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-ink`, 'white')}</mask>`).join('') : ''}
-    ${hasOffset && S.artistType === 'touring' ? grad('artist-type-gradient', kl, 1800 - kl, gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
-    ${['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? grad('offset-background', 1800 - kl, kl,
+    ${!vectorPaths && gradientOutline ?
+      offsetLayers.map(i => `offset-${i}-ink`).concat(directTypeStroke ? ['offset-direct-ink'] : [])
+        .map(id => `<mask id="${id}-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(id, 'white')}</mask>`).join('') : ''}
+    ${singleColorFade ? grad('single-color-outline', 1800 - kl, kl,
+      priceStops.map(([color, position]) => [color === '#ffffff' ? cols[0] : '#ffffff', position])) : ''}
+    ${repeatingTypeFill ? grad('repeating-type-gradient', kl, 1800 - kl, S.artistType === 'local' ?
+      repeatingStops(gradientPalette) :
+      gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
+    ${reversedTypeOutline ? grad('local-type-outline', kl, 1800 - kl,
+      repeatingStops([...gradientPalette].reverse())) : ''}
+    ${touringArtist ? grad('artist-type-gradient', kl, 1800 - kl, gradientPalette.map((color, i) => [color, i / (gradientPalette.length - 1)])) : ''}
+    ${touringOutline ? grad('touring-outline-gradient', kl, 1800 - kl,
+      [[cols[0], 0], [cols[0], .6], [cols[1] || '#fff', 1]]) : ''}
+    ${hasGradientBackground ? grad('offset-background', 1800 - kl, kl,
       priceStops) +
       (vectorPaths ? '' : offsetLayers.map(i => `<mask id="offset-gap-${i}" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${offsetUse(`offset-${i}-gap`, 'white')}</mask>`).join('')) : ''}
     ${mixedArtist ? `<linearGradient id="mixed-address-gradient" gradientUnits="userSpaceOnUse" x1="${f.x}" y1="-900" x2="${f.x}" y2="2700"><stop offset="0" stop-color="${cols[0]}"/><stop offset="1" stop-color="${cols[1] || '#ffffff'}"/></linearGradient><mask id="mixed-address-all" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha">${addressArtwork}</mask>` : ''}
-    <g id="artwork-shape" fill="white" stroke="none" filter="url(#solidify)">${cornerArtwork !== null ? `<path d="${cornerArtwork}" fill-rule="nonzero"/>` : borderShape + items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
-    ${hasOffset && !vectorPaths ? `<g id="offset-shape" fill="white" stroke="none" filter="url(#solidify)">${offsetSource}</g>` : ''}
+    <g id="artwork-shape" fill="white" stroke="none"${vectorPaths ? '' : ' filter="url(#solidify)"'}>${vectorPaths ? `<path d="${vectorArtwork}" fill-rule="nonzero"/>` : joinTypeToFrame ? '<use href="#frame-joined"/>' : borderShape + items.map(i=>i('fill="white" stroke="none"')).join('')}</g>
+    ${hasOffset && !vectorPaths ? `<g id="offset-shape" fill="white" stroke="none" filter="url(#solidify)">${joinTypeToFrame ? '<use href="#frame-joined"/>' : offsetSource}</g>` : ''}
     <mask id="lt" maskUnits="userSpaceOnUse" x="0" y="0" width="1200" height="1800" style="mask-type:alpha"><use href="#artwork-shape"/></mask></defs>
     <g clip-path="url(#postcard-edge)">
+    <g transform="translate(600 900) scale(${artworkScaleX} ${artworkScaleY}) translate(-600 ${-artworkCenterY})">
     <rect width="1200" height="1800" fill="${S.colorStyle === 'offsetFull' ? 'url(#offset-background)' : '#fff'}"/>
     <g>
-    ${['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap', 'offset', 'offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? `
-      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${['offsetGradient', 'offsetGradientLightness', 'offsetGradientCorners', 'offsetFull'].includes(S.colorStyle) ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
-      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${fixedWidthOutlines ? '' : directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
+    ${hasOffset || ['screenprint', 'hybrid', 'graphic', 'anchored', 'bitmap'].includes(S.colorStyle) ? `
+      <rect x="${kl}" y="${kl}" width="${1200-2*kl}" height="${1800-2*kl}" fill="${hasGradientBackground ? 'url(#offset-background)' : !['screenprint', 'offset'].includes(S.colorStyle) ? 'url(#B)' : cols[1] || '#fffdf5'}"/>
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect width="1200" height="1800" fill="${artistTypeFill}"/></g>
-      ${mixedArtist ? `<g${cornerArtwork !== null ? ' mask="url(#lt)"' : ''}><rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/></g>` : ''}
-      ${fixedWidthOutlines ? directArtworkEdge : ''}
+      ${mixedArtist ? `<g${vectorPaths ? ' mask="url(#lt)"' : ''}><rect width="1200" height="1800" fill="url(#mixed-address-gradient)" mask="url(#mixed-address-all)"/></g>` : ''}
       ${S.colorStyle === 'screenprint' ? items.filter(render => render.addressInk).map(render => render(`fill="${cols[2] || cols[0]}" stroke="none"`)).join('') : ''}
     ` : `
       <g clip-path="url(#cd)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
       <g clip-path="url(#fr)"><rect x="${f.x-80}" y="${f.y-80}" width="${f.w+160}" height="${f.h+160}" fill="url(#B)" filter="url(#gr)"/></g>
-      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}${fixedWidthOutlines ? '' : directArtworkEdge}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
+      ${hasOffset ? `<g${S.colorStyle === 'offsetFull' ? '' : ' clip-path="url(#cd)"'}>${offsetArtwork}</g>` : '<use href="#artwork-shape" filter="url(#type-outline)"/>'}
       <g mask="url(#lt)"><rect x="-80" y="-80" width="1360" height="1960" fill="url(#A)" filter="url(#gr)"/></g>
     `}
     </g>
-    ${S.independent === true ? `<rect x="${kl + 3}" y="${kl + 3}" width="${1200 - 2 * kl - 6}" height="${1800 - 2 * kl - 6}" fill="none" stroke="${cols[1] || '#ffffff'}" stroke-width="4" pointer-events="none"/>` : ''}
-    ${footer()}
+    ${S.independent === true ? `<rect x="${kl + 3}" y="${kl + 3}" width="${1200 - 2 * kl - 6}" height="${1800 - 2 * kl - 6}" fill="none" stroke="${separateTypeColor || usesArtistFill ? artistTypeFill : cols[1] || '#ffffff'}" stroke-width="4" pointer-events="none"/>` : ''}
+    ${footer(separateTypeColor || usesArtistFill ? artistTypeFill : k)}
     ${S.grain > 0 ? `<g clip-path="url(#cd)" pointer-events="none" style="mix-blend-mode:multiply" opacity="${Math.min(120, Math.max(0, S.grain)) / 120 * .28}"><rect width="1200" height="1800" filter="url(#print-noise)"/></g>` : ''}
-    ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.7" style="mix-blend-mode:screen"/>` : ''}
-    ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}</g></svg>`;
+    ${postcardTexture ? `<image href="${esc(postcardTexture)}" x="0" y="0" width="1200" height="1800" preserveAspectRatio="xMidYMid slice" opacity="0.6" style="mix-blend-mode:screen"/>` : ''}
+    ${guides}${preview && $('colorGrid').checked ? colorGridOverlay() + compositionOverlay() : ''}
+    </g>
+    ${ownershipBorder ? `<path d="M 0 0 H 1200 V 1800 H 0 Z M ${ownershipBorder} ${ownershipBorder} H ${1200 - ownershipBorder} V ${1800 - ownershipBorder} H ${ownershipBorder} Z" fill="${cols[1] || '#fff'}" fill-rule="evenodd"/>` : ''}
+    ${statusBorder ? `<rect x="${statusBorderInset}" y="${statusBorderInset}" width="${1200 - 2 * statusBorderInset}" height="${1800 - 2 * statusBorderInset}" fill="none" stroke="#000" stroke-width="${statusBorder}"/>` : ''}
+    </g></svg>`;
     }
 
     /* ================= UI ================= */
@@ -1713,35 +1939,59 @@
       if (err) w.push(err);
       $('msg').innerHTML = w.map(x => `<div><b>•</b> ${x}</div>`).join('');
     }
-    // Convert between the linear slider position and logarithmic venue capacity.
-    const capFromT = t => Math.round(30 * Math.pow(40000 / 30, t / 1000)),
-      tFromCap = c => Math.round(Math.log(c / 30) / Math.log(40000 / 30) * 1000);
+    const BASE_CAPACITY_MAX = 40000, CAPACITY_MAX = 250000;
+    const BASE_CAPACITY_STEPS = 1000, EXTRA_CAPACITY_STEPS = 255;
+    const MAX_EXTRA_CAPACITY_OUTLINES = 8;
+    const extraCapacityProgress = capacity =>
+      Math.log(capacity / BASE_CAPACITY_MAX) / Math.log(CAPACITY_MAX / BASE_CAPACITY_MAX);
+    // Keep the original slider mapping through 40,000 and append a logarithmic range.
+    const capFromT = t => t <= BASE_CAPACITY_STEPS
+      ? Math.round(30 * Math.pow(BASE_CAPACITY_MAX / 30, t / BASE_CAPACITY_STEPS))
+      : Math.round(BASE_CAPACITY_MAX * Math.pow(CAPACITY_MAX / BASE_CAPACITY_MAX,
+        (t - BASE_CAPACITY_STEPS) / EXTRA_CAPACITY_STEPS));
+    const tFromCap = c => Math.round(Math.log(Math.min(c, BASE_CAPACITY_MAX) / 30) /
+      Math.log(BASE_CAPACITY_MAX / 30) * BASE_CAPACITY_STEPS);
+    const capacitySliderPosition = c => c <= BASE_CAPACITY_MAX ? tFromCap(c)
+      : BASE_CAPACITY_STEPS + Math.round(extraCapacityProgress(c) * EXTRA_CAPACITY_STEPS);
+    const offsetCountFromCap = c => {
+      const baseCount = 1 + Math.floor(9 * Math.max(0, tFromCap(c) / BASE_CAPACITY_STEPS));
+      return c <= BASE_CAPACITY_MAX ? baseCount
+        : baseCount + Math.ceil(MAX_EXTRA_CAPACITY_OUTLINES * extraCapacityProgress(Math.min(c, CAPACITY_MAX)));
+    };
     // Copy application state into the controls after loading a preset or randomizing.
+    function syncCornerRadius() {
+      $('cornerRadius').disabled = usesPriceRounding() || usesOwnershipRounding();
+      $('cornerRadius').value = typeCornerRadius();
+      $('cornerRadiusValue').value = typeCornerRadius();
+    }
     function sync() {
       $('name').value = S.name;
       $('addr').value = S.addr;
       $('hood').value = S.hood;
       $('colorStyle').value = S.colorStyle;
       $('vectorOutlines').checked = S.vectorOutlines;
-      $('cornerRadius').value = S.cornerRadius ?? 8;
-      $('cornerRadiusValue').value = S.cornerRadius ?? 8;
+      syncCornerRadius();
       $('latitude').value = S.latitude ?? '';
       $('longitude').value = S.longitude ?? '';
       $('yr').value = $('yn').value = S.years;
-      $('cr').value = tFromCap(S.cap);
+      $('cr').value = capacitySliderPosition(S.cap);
       $('cn2').value = S.cap;
       $('ticketPrice').value = S.ticketPrice;
       $('artistType').value = S.artistType;
+      $('venueStatus').value = S.venueStatus;
       $('independent').value = S.independent === null ? '' : S.independent ? 'yes' : 'no';
-      [...$('type').children].forEach((button, i) => {
-        button.classList.toggle('on', i === S.type);
-        button.setAttribute('aria-pressed', String(i === S.type));
+      [...$('type').children].forEach(button => {
+        const selected = Number(button.dataset.i) === S.type;
+        button.classList.toggle('on', selected);
+        button.setAttribute('aria-pressed', String(selected));
       });
       $('opened').value = YEAR - S.years;
       $('grain').value = S.grain;
       $('seed').value = S.seed;
       $('guides').checked = S.guides;
       $('pack').value = S.pack;
+      $('splitContainers').value = S.splitContainers;
+      $('splitContainers').disabled = S.pack !== 3;
       $('spread').value = S.spread;
       $('sv').textContent = S.spread;
       $('slab').value = S.slab;
@@ -1763,8 +2013,8 @@
       sync();
       draw()
     };
-    $('type').innerHTML = VENUE_TYPES.map(([title, ok], i) =>
-      `<button type="button" class="chip" data-i="${i}" aria-pressed="false" ${ok ? '' : 'disabled'}>${title}</button>`).join('');
+    $('type').innerHTML = VENUE_TYPES.map(([title, ok, , hidden], i) =>
+      hidden ? '' : `<button type="button" class="chip" data-i="${i}" aria-pressed="false" ${ok ? '' : 'disabled'}>${title}</button>`).join('');
     $('type').onclick = e => {
       const button = e.target.closest('button');
       if (!button || button.disabled) return;
@@ -1807,14 +2057,21 @@
     bind('name', e => S.name = e.value);
     bind('addr', e => S.addr = e.value);
     bind('hood', e => { S.hood = e.value; updateNeighborhoodCoordinates(); });
-    bind('colorStyle', e => S.colorStyle = e.value);
+    bind('colorStyle', e => {
+      S.colorStyle = e.value;
+      syncCornerRadius();
+    });
     bind('cornerRadius', e => {
       S.cornerRadius = +e.value;
-      $('cornerRadiusValue').value = e.value;
+      syncCornerRadius();
     });
     bind('vectorOutlines', e => S.vectorOutlines = e.checked);
     bind('artistType', e => S.artistType = e.value);
-    bind('independent', e => S.independent = e.value === '' ? null : e.value === 'yes');
+    bind('venueStatus', e => S.venueStatus = e.value);
+    bind('independent', e => {
+      S.independent = e.value === '' ? null : e.value === 'yes';
+      syncCornerRadius();
+    });
     bind('colorGrid', () => {});
     bind('yr', e => {
       S.years = +e.value;
@@ -1832,10 +2089,11 @@
     });
     bind('ticketPrice', e => {
       S.ticketPrice = Math.max(0, Number.isFinite(e.valueAsNumber) ? e.valueAsNumber : 0);
+      syncCornerRadius();
     });
     bind('cn2', e => {
-      S.cap = Math.min(40000, Math.max(30, +e.value || 30));
-      $('cr').value = tFromCap(S.cap)
+      S.cap = Math.min(CAPACITY_MAX, Math.max(30, +e.value || 30));
+      $('cr').value = capacitySliderPosition(S.cap)
     });
     bind('opened', e => {
       if (!e.value || !e.validity.valid) return;
@@ -1845,7 +2103,11 @@
     bind('grain', e => S.grain = +e.value);
     bind('seed', e => S.seed = Math.max(0, +e.value || 0));
     bind('guides', e => S.guides = e.checked);
-    bind('pack', e => S.pack = +e.value);
+    bind('pack', e => {
+      S.pack = +e.value;
+      $('splitContainers').disabled = S.pack !== 3;
+    });
+    bind('splitContainers', e => S.splitContainers = +e.value);
     bind('spread', e => {
       S.spread = +e.value;
       $('sv').textContent = S.spread
@@ -1888,7 +2150,7 @@
         addr: r[1],
         hood: r[2],
         years: 5 + (Math.random() * 115 | 0),
-        cap: capFromT(Math.random() * 1000),
+        cap: capFromT(Math.random() * BASE_CAPACITY_STEPS),
         genres: g,
         seed: Math.random() * 20 | 0,
         spread: Math.random() * 50 | 0
@@ -2150,21 +2412,59 @@
     $('svg').onclick = () => save(new Blob([build()], {
       type: 'image/svg+xml'
     }), 'svg');
-    // Rasterize the same SVG used by the preview at the full 1200 × 1800 postcard size.
+    async function setPngPrintResolution(blob, dpi) {
+      const bytes = new Uint8Array(await blob.arrayBuffer());
+      const png = new DataView(bytes.buffer);
+      const pixelsPerMeter = Math.round(dpi / 0.0254);
+      const chunk = new Uint8Array(21);
+      const fields = new DataView(chunk.buffer);
+      const physicalDimensions = 0x70485973; // pHYs
+      fields.setUint32(0, 9);
+      fields.setUint32(4, physicalDimensions);
+      fields.setUint32(8, pixelsPerMeter);
+      fields.setUint32(12, pixelsPerMeter);
+      chunk[16] = 1; // Metres
+      let crc = 0xffffffff;
+      for (const byte of chunk.subarray(4, 17)) {
+        crc ^= byte;
+        for (let bit = 0; bit < 8; bit++) {
+          crc = (crc >>> 1) ^ ((crc & 1) ? 0xedb88320 : 0);
+        }
+      }
+      fields.setUint32(17, crc ^ 0xffffffff);
+
+      const headerEnd = 8 + 12 + png.getUint32(8);
+      const parts = [bytes.subarray(0, headerEnd), chunk];
+      for (let offset = headerEnd; offset < bytes.length;) {
+        const end = offset + 12 + png.getUint32(offset);
+        if (png.getUint32(offset + 4) !== physicalDimensions) {
+          parts.push(bytes.subarray(offset, end));
+        }
+        offset = end;
+      }
+      return new Blob(parts, {type: 'image/png'});
+    }
     $('png').onclick = () => {
-      const u = URL.createObjectURL(new Blob([build()], {
+      const dpi = 300;
+      const rasterSize = {width: 4 * dpi, height: 6 * dpi};
+      const u = URL.createObjectURL(new Blob([build(false, rasterSize)], {
           type: 'image/svg+xml'
         })),
         im = new Image();
       im.onload = () => {
         try {
           const c = document.createElement('canvas');
-          c.width = 1200;
-          c.height = 1800;
-          c.getContext('2d').drawImage(im, 0, 0, 1200, 1800);
-          c.toBlob(b => {
-            if (b) save(b, 'png');
-            else { err = 'Could not create the PNG. Please try again.'; msgs(); }
+          c.width = rasterSize.width;
+          c.height = rasterSize.height;
+          c.getContext('2d').drawImage(im, 0, 0);
+          c.toBlob(async b => {
+            try {
+              if (!b) throw new Error('PNG encoding failed');
+              save(await setPngPrintResolution(b, dpi), 'png');
+            } catch {
+              err = 'Could not create the PNG. Please try again.';
+              msgs();
+            }
           }, 'image/png');
         } catch {
           err = 'Could not export the PNG. Please try again.';

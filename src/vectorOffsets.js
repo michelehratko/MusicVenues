@@ -1,7 +1,7 @@
 /* Vector polygon offsets. Clipper's license is retained in clipper.js. */
 (() => {
   const scale = 100;
-  let cachedKey, cachedPaths, cachedOffsets;
+  const outlineCache = new Map();
   const multiply = (a, b) => [
     a[0]*b[0]+a[2]*b[1], a[1]*b[0]+a[3]*b[1],
     a[0]*b[2]+a[2]*b[3], a[1]*b[2]+a[3]*b[3],
@@ -73,7 +73,7 @@
     // Remove redundant/near-collinear anchors without an inset/outset pass.
     // Do this once on the shared source, so ink and gap offsets retain the
     // same three-unit separation instead of independently changing pockets.
-    const cleaned = ClipperLib.Clipper.CleanPolygon(path, .9*scale);
+    const cleaned = ClipperLib.Clipper.CleanPolygon(path, .18*scale);
     return [cleaned.length >= 3 ? cleaned : path];
   }
   // Resolve transformed glyphs, repeated slices and their clip paths into one
@@ -113,9 +113,10 @@
   }
   // Replace only actual corners with tangent circular fillets. Keep sampled
   // font curves and all straight edges outside the fillet exactly in place.
-  function roundCorners(path, radius) {
+  function roundCorners(path, radius, preserveCorner = () => false) {
     if (radius <= 0) return path;
     return path.flatMap((p, i) => {
+      if (preserveCorner(p)) return [p];
       const a = path[(i+path.length-1)%path.length], b = path[(i+1)%path.length],
         incoming = Math.hypot(p.X-a.X, p.Y-a.Y), outgoing = Math.hypot(b.X-p.X, b.Y-p.Y);
       if (!incoming || !outgoing) return [p];
@@ -141,27 +142,67 @@
       });
     });
   }
-  window.vectorOffsetPaths = (markup, radii, corners = 'auto', radius = 8) => {
+  window.vectorOffsetPaths = (markup, radii, corners = 'auto', radius = 8, squareFrame = null, frameJoin = null) => {
     if (typeof ClipperLib === 'undefined') throw Error('Vector offset library did not load');
-    const key = corners + ':' + radius + ':' + markup;
-    if (cachedKey !== key) {
+    const key = corners + ':' + radius + ':' + squareFrame + ':' + frameJoin + ':' + markup;
+    const isFrameCorner = (point, distance = 0) => {
+      if (!squareFrame) return false;
+      const [outer, inner] = squareFrame;
+      const matches = ([left, top, right, bottom], outset) =>
+        [left - outset, right + outset].some(x => Math.abs(point.X - x*scale) <= 1) &&
+        [top - outset, bottom + outset].some(y => Math.abs(point.Y - y*scale) <= 1);
+      // Offset ink expands past the outer edge and contracts the inner opening.
+      return matches(outer, distance) || matches(inner, -distance);
+    };
+    const isJoinPocket = (path, distance = 0) => {
+      if (!frameJoin) return false;
+      const [x, y, w, h, reach] = frameJoin;
+      const area = ClipperLib.Clipper.Area(path);
+      if (area >= 0 || -area > 2 * reach * reach * scale * scale) return false;
+      const left = (x + distance) * scale, right = (x + w - distance) * scale,
+        top = (y + distance) * scale, bottom = (y + h - distance) * scale,
+        tolerance = 2 * reach * scale;
+      return path.some(p => Math.min(Math.abs(p.X-left), Math.abs(p.X-right),
+        Math.abs(p.Y-top), Math.abs(p.Y-bottom)) <= tolerance);
+    };
+    let cached = outlineCache.get(key);
+    if (!cached) {
       // Remove almost coincident vertices and sub-unit slice teeth after all
       // transforms/clips. Cleaning glyphs before slicing cannot catch those.
-      const paths = combine(ClipperLib.Clipper.CleanPolygons(silhouette(markup), .6*scale),
+      const paths = combine(ClipperLib.Clipper.CleanPolygons(silhouette(markup), .12*scale),
         null, ClipperLib.ClipType.ctUnion);
-      cachedPaths = combine(paths.flatMap(simplifySmallPocket), null, ClipperLib.ClipType.ctUnion);
+      let pathsToOffset = combine(paths.flatMap(simplifySmallPocket), null, ClipperLib.ClipType.ctUnion);
+      if (frameJoin) {
+        const [x, y, w, h, reach] = frameJoin;
+        const rect = (l, t, r, b) => polygon([[l,t],[r,t],[r,b],[l,b]], [1,0,0,1,0,0]);
+        const inset = reach * 2;
+        const band = [rect(x,y,x+w,y+h), rect(x+inset,y+inset,x+w-inset,y+h-inset).reverse()];
+        const close = new ClipperLib.ClipperOffset(2);
+        const expanded = [], closed = [];
+        close.AddPaths(pathsToOffset, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon);
+        close.Execute(expanded, reach * scale);
+        close.Clear();
+        close.AddPaths(expanded, ClipperLib.JoinType.jtMiter, ClipperLib.EndType.etClosedPolygon);
+        close.Execute(closed, -reach * scale);
+        const joins = combine(closed, band, ClipperLib.ClipType.ctIntersection);
+        pathsToOffset = combine([...pathsToOffset, ...joins], null, ClipperLib.ClipType.ctUnion)
+          .filter(path => !isJoinPocket(path));
+      }
       // Round the source anchors once. All repetitions then follow the same
       // letter contour, rather than independently changing each offset layer.
       if (corners === 'round' && radius > 0) {
-        cachedPaths = combine(cachedPaths.map(path => roundCorners(path, radius)),
+        pathsToOffset = combine(pathsToOffset.map(path => roundCorners(path, radius, isFrameCorner)),
           null, ClipperLib.ClipType.ctUnion);
       }
-      cachedOffsets = new Map(); cachedKey = key;
+      // A mixed-artist postcard uses both the full silhouette and the address.
+      if (outlineCache.size === 2) outlineCache.delete(outlineCache.keys().next().value);
+      cached = {paths: pathsToOffset, offsets: new Map()};
+      outlineCache.set(key, cached);
     }
     // Use round joins along sampled curves and at tiny slice teeth. Only a
     // clear corner between substantial edges gets a bounded sharp miter.
     // Override this instance only; the vendored Clipper library stays intact.
-    const offset = new ClipperLib.ClipperOffset(2, .1*scale);
+    const offset = new ClipperLib.ClipperOffset(2, .06*scale);
     const offsetPoint = offset.OffsetPoint;
     offset.OffsetPoint = function(j, k) {
       const points = this.m_srcPoly, p = points[j],
@@ -171,28 +212,28 @@
         cosine = (ax*bx+ay*by)/(incoming*outgoing || 1);
       // Keep the original selective joins: smooth curves and tight tips,
       // with sharp corners only on clear, substantial edges.
-      const sharp = corners === 'sharp' || corners === 'auto' && incoming >= 2*scale && outgoing >= 2*scale &&
+      const sharp = isFrameCorner(p) || corners === 'sharp' || corners === 'auto' && incoming >= 2*scale && outgoing >= 2*scale &&
         cosine <= Math.cos(50*Math.PI/180) && cosine >= -.5;
       return offsetPoint.call(this, j, k, sharp ?
         ClipperLib.JoinType.jtMiter : ClipperLib.JoinType.jtRound);
     };
-    offset.AddPaths(cachedPaths, ClipperLib.JoinType.jtRound, ClipperLib.EndType.etClosedPolygon);
+    offset.AddPaths(cached.paths, ClipperLib.JoinType.jtRound, ClipperLib.EndType.etClosedPolygon);
     return radii.map(distance => {
-      if (!cachedOffsets.has(distance)) {
+      if (!cached.offsets.has(distance)) {
         const result = [];
         offset.Execute(result, distance*scale);
         let simple = combine(result, null, ClipperLib.ClipType.ctUnion)
-          .filter(path => Math.abs(ClipperLib.Clipper.Area(path)) >= scale*scale);
+          .filter(path => Math.abs(ClipperLib.Clipper.Area(path)) >= scale*scale && !isJoinPocket(path, distance));
         // Expanded letters can meet and create entirely new concave anchors.
         // Round these after union too; source fillets cannot prevent them.
         if (corners === 'round' && radius > 0 && distance !== 0) {
-          simple = combine(simple.map(path => roundCorners(path, radius)),
+          simple = combine(simple.map(path => roundCorners(path, radius, point => isFrameCorner(point, distance))),
             null, ClipperLib.ClipType.ctUnion);
         }
-        cachedOffsets.set(distance, simple.map(path => 'M ' + path.map(p =>
+        cached.offsets.set(distance, simple.map(path => 'M ' + path.map(p =>
           `${p.X/scale} ${p.Y/scale}`).join(' L ') + ' Z').join(' '));
       }
-      return cachedOffsets.get(distance);
+      return cached.offsets.get(distance);
     });
   };
 })();

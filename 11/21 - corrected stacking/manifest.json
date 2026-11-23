@@ -1,0 +1,2824 @@
+[
+  {
+    "name": "The Saloon",
+    "addr": "1232 Grant Ave",
+    "hood": "North Beach",
+    "years": 165,
+    "cap": 59,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      10,
+      11,
+      1
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.7981,
+    "longitude": -122.4072,
+    "filename": "001-the-saloon.png",
+    "nameSlots": [
+      "THE SALOON",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Ruth Williams Opera House",
+    "addr": "4705 3rd St",
+    "hood": "Bayview",
+    "years": 138,
+    "cap": 300,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      11,
+      8,
+      6
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7305,
+    "longitude": -122.3896,
+    "filename": "002-ruth-williams-opera-house.png",
+    "nameSlots": [
+      "RUTH",
+      "WILLIAMS",
+      "OPERA",
+      "HOUSE"
+    ]
+  },
+  {
+    "name": "Golden Gate Bandshell",
+    "addr": "Music Concourse Dr",
+    "hood": "Golden Gate Park",
+    "years": 126,
+    "cap": 500,
+    "ticketPrice": 0,
+    "type": 6,
+    "genres": [
+      1,
+      8,
+      6
+    ],
+    "artistType": "local",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7701,
+    "longitude": -122.4698,
+    "filename": "003-golden-gate-bandshell.png",
+    "nameSlots": [
+      "GOLDEN",
+      "GATE",
+      "BANDSHELL"
+    ]
+  },
+  {
+    "name": "Savoy Tivoli",
+    "addr": "1434 Grant Ave",
+    "hood": "North Beach",
+    "years": 119,
+    "cap": 230,
+    "ticketPrice": 10,
+    "type": 2,
+    "genres": [
+      1,
+      3,
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7993,
+    "longitude": -122.4077,
+    "filename": "004-savoy-tivoli.png",
+    "nameSlots": [
+      "SAVOY",
+      "TIVOLI",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Swedish American Hall",
+    "addr": "2174 Market St",
+    "hood": "Upper Market",
+    "years": 119,
+    "cap": 300,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      12,
+      1,
+      0
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7646,
+    "longitude": -122.4332,
+    "filename": "005-swedish-american-hall.png",
+    "nameSlots": [
+      "SWEDISH",
+      "AMER",
+      "ICAN",
+      "HALL"
+    ]
+  },
+  {
+    "name": "Cafe du Nord",
+    "addr": "2174 Market St",
+    "hood": "Upper Market",
+    "years": 119,
+    "cap": 320,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      0,
+      12
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7646,
+    "longitude": -122.4332,
+    "filename": "006-cafe-du-nord.png",
+    "nameSlots": [
+      "CAFE",
+      "DU",
+      "NORD"
+    ]
+  },
+  {
+    "name": "4 Star Theater",
+    "addr": "2200 Clement St",
+    "hood": "Richmond",
+    "years": 113,
+    "cap": 140,
+    "ticketPrice": 10,
+    "type": 2,
+    "genres": [
+      5,
+      1
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 1,
+    "latitude": 37.7821,
+    "longitude": -122.4825,
+    "filename": "007-4-star-theater.png",
+    "nameSlots": [
+      "4 STAR",
+      "THEATER",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Bill Graham Civic Auditorium",
+    "addr": "99 Grove St",
+    "hood": "Civic Center",
+    "years": 111,
+    "cap": 8500,
+    "ticketPrice": 124.5,
+    "type": 2,
+    "genres": [
+      1,
+      0,
+      2
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7783,
+    "longitude": -122.4175,
+    "filename": "008-bill-graham-civic-auditorium.png",
+    "nameSlots": [
+      "BILL",
+      "GRAHAM",
+      "CIVIC",
+      "AUDITORIUM"
+    ]
+  },
+  {
+    "name": "SF Conservatory of Music",
+    "addr": "50 Oak St",
+    "hood": "Civic Center",
+    "years": 109,
+    "cap": 400,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      6,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7765,
+    "longitude": -122.421,
+    "filename": "009-sf-conservatory-of-music.png",
+    "nameSlots": [
+      "SF CON",
+      "SERVATORY",
+      "OF",
+      "MUSIC"
+    ]
+  },
+  {
+    "name": "Community Music Center",
+    "addr": "544 Capp St",
+    "hood": "Mission",
+    "years": 105,
+    "cap": 130,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      6,
+      8,
+      9
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.761,
+    "longitude": -122.4141,
+    "filename": "010-community-music-center.png",
+    "nameSlots": [
+      "COMMUNITY",
+      "MUSIC",
+      "CENTER"
+    ]
+  },
+  {
+    "name": "The Castro Theatre",
+    "addr": "429 Castro St",
+    "hood": "Castro",
+    "years": 104,
+    "cap": 1400,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      0,
+      1
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7621,
+    "longitude": -122.435,
+    "filename": "011-the-castro-theatre.png",
+    "nameSlots": [
+      "THE",
+      "CASTRO",
+      "THE",
+      "ATRE"
+    ]
+  },
+  {
+    "name": "The Warfield",
+    "addr": "982 Market St",
+    "hood": "Tenderloin",
+    "years": 104,
+    "cap": 2454,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      1,
+      0,
+      2
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7825,
+    "longitude": -122.41,
+    "filename": "012-the-warfield.png",
+    "nameSlots": [
+      "THE",
+      "WARFIELD",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Great Star Theater",
+    "addr": "636 Jackson St",
+    "hood": "Chinatown",
+    "years": 101,
+    "cap": 500,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      6,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7956,
+    "longitude": -122.4062,
+    "filename": "013-great-star-theater.png",
+    "nameSlots": [
+      "GREAT",
+      "STAR",
+      "THE",
+      "ATER"
+    ]
+  },
+  {
+    "name": "Bimbo's 365 Club",
+    "addr": "1025 Columbus Ave",
+    "hood": "North Beach",
+    "years": 95,
+    "cap": 680,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      0,
+      1,
+      8
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.8029,
+    "longitude": -122.4161,
+    "filename": "014-bimbo-s-365-club.png",
+    "nameSlots": [
+      "BIMBO'S",
+      "365",
+      "CLUB"
+    ]
+  },
+  {
+    "name": "Herbst Theater",
+    "addr": "401 Van Ness Ave",
+    "hood": "Civic Center",
+    "years": 94,
+    "cap": 900,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      6,
+      8
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 1,
+    "latitude": 37.779,
+    "longitude": -122.4213,
+    "filename": "015-herbst-theater.png",
+    "nameSlots": [
+      "HERBST",
+      "THEATER",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Dawn Club",
+    "addr": "10 Annie St",
+    "hood": "Yerba Buena",
+    "years": 93,
+    "cap": 125,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7869,
+    "longitude": -122.4012,
+    "filename": "016-dawn-club.png",
+    "nameSlots": [
+      "DAWN",
+      "CLUB",
+      ""
+    ]
+  },
+  {
+    "name": "Stern Grove Festival",
+    "addr": "Sigmund Stern Grove",
+    "hood": "Sunset",
+    "years": 88,
+    "cap": 10000,
+    "ticketPrice": 0,
+    "type": 6,
+    "genres": [
+      6,
+      0,
+      1
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7365,
+    "longitude": -122.4757,
+    "filename": "017-stern-grove-festival.png",
+    "nameSlots": [
+      "STERN",
+      "GROVE",
+      "FESTIVAL"
+    ]
+  },
+  {
+    "name": "Presidio Theater",
+    "addr": "99 Moraga Ave",
+    "hood": "Presidio",
+    "years": 87,
+    "cap": 600,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      6,
+      12,
+      8
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 1,
+    "latitude": 37.7978,
+    "longitude": -122.4587,
+    "filename": "018-presidio-theater.png",
+    "nameSlots": [
+      "PRESIDIO",
+      "THEATER",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Cow Palace",
+    "addr": "2600 Geneva Ave",
+    "hood": "Daly City",
+    "years": 85,
+    "cap": 16500,
+    "ticketPrice": 74.5,
+    "type": 4,
+    "genres": [
+      1,
+      0,
+      2
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7064,
+    "longitude": -122.4195,
+    "filename": "019-cow-palace.png",
+    "nameSlots": [
+      "COW",
+      "PALACE"
+    ]
+  },
+  {
+    "name": "The Rite Spot Cafe",
+    "addr": "2099 Folsom St",
+    "hood": "Mission",
+    "years": 74,
+    "cap": 75,
+    "ticketPrice": 10,
+    "type": 13,
+    "genres": [
+      12,
+      10,
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.763,
+    "longitude": -122.4147,
+    "filename": "020-the-rite-spot-cafe.png",
+    "nameSlots": [
+      "THE RITE",
+      "SPOT",
+      "CAFE"
+    ]
+  },
+  {
+    "name": "The Fillmore",
+    "addr": "1805 Geary Blvd",
+    "hood": "Fillmore",
+    "years": 72,
+    "cap": 1315,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      1,
+      0,
+      2
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7841,
+    "longitude": -122.4331,
+    "filename": "021-the-fillmore.png",
+    "nameSlots": [
+      "TH",
+      "E",
+      "FILL",
+      "MORE"
+    ]
+  },
+  {
+    "name": "Caffe Trieste",
+    "addr": "601 Vallejo St",
+    "hood": "North Beach",
+    "years": 70,
+    "cap": 80,
+    "ticketPrice": 0,
+    "type": 13,
+    "genres": [
+      12,
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7983,
+    "longitude": -122.4086,
+    "filename": "022-caffe-trieste.png",
+    "nameSlots": [
+      "CAFFE",
+      "TRIESTE",
+      ""
+    ]
+  },
+  {
+    "name": "The Masonic",
+    "addr": "1111 California St",
+    "hood": "Nob Hill",
+    "years": 68,
+    "cap": 3400,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      0,
+      1,
+      2
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7922,
+    "longitude": -122.4128,
+    "filename": "023-the-masonic.png",
+    "nameSlots": [
+      "THE",
+      "MASONIC",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Peacock Lounge",
+    "addr": "552 Haight St",
+    "hood": "Lower Haight",
+    "years": 66,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      8,
+      11
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7722,
+    "longitude": -122.43,
+    "filename": "024-peacock-lounge.png",
+    "nameSlots": [
+      "PEACOCK",
+      "LOUNGE",
+      ""
+    ]
+  },
+  {
+    "name": "Grace Cathedral",
+    "addr": "1100 California St",
+    "hood": "Nob Hill",
+    "years": 62,
+    "cap": 1200,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      6,
+      5,
+      8
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7919,
+    "longitude": -122.4132,
+    "filename": "025-grace-cathedral.png",
+    "nameSlots": [
+      "GRACE",
+      "CATHEDRAL",
+      ""
+    ]
+  },
+  {
+    "name": "The Stud",
+    "addr": "1123 Folsom St",
+    "hood": "SoMa",
+    "years": 60,
+    "cap": 300,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      7,
+      0
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Saved",
+    "pack": 2,
+    "latitude": 37.7747,
+    "longitude": -122.4072,
+    "filename": "026-the-stud.png",
+    "nameSlots": [
+      "THE STUD",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Audium",
+    "addr": "1616 Bush St",
+    "hood": "Civic Center",
+    "years": 59,
+    "cap": 49,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      5,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7881,
+    "longitude": -122.4256,
+    "filename": "027-audium.png",
+    "nameSlots": [
+      "AUDIUM",
+      "",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Palace of Fine Arts Theatre",
+    "addr": "3301 Lyon St",
+    "hood": "Marina",
+    "years": 56,
+    "cap": 960,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      0,
+      6
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.8029,
+    "longitude": -122.4484,
+    "filename": "028-palace-of-fine-arts-theatre.png",
+    "nameSlots": [
+      "PALACE",
+      "OF FINE",
+      "ARTS",
+      "THEATRE"
+    ]
+  },
+  {
+    "name": "Old First Concerts",
+    "addr": "1751 Sacramento St",
+    "hood": "Polk Gulch",
+    "years": 56,
+    "cap": 450,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      6,
+      8,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7918,
+    "longitude": -122.4225,
+    "filename": "029-old-first-concerts.png",
+    "nameSlots": [
+      "OLD",
+      "FIRST",
+      "CONCERTS"
+    ]
+  },
+  {
+    "name": "Great American Music Hall",
+    "addr": "859 O'Farrell St",
+    "hood": "Little Saigon",
+    "years": 54,
+    "cap": 700,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      0,
+      12
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7855,
+    "longitude": -122.418,
+    "filename": "030-great-american-music-hall.png",
+    "nameSlots": [
+      "GREAT",
+      "AMERICAN",
+      "MUSIC HALL"
+    ]
+  },
+  {
+    "name": "The Mabuhay Gardens",
+    "addr": "443 Broadway",
+    "hood": "North Beach",
+    "years": 53,
+    "cap": 700,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      3,
+      1
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Saved",
+    "pack": 0,
+    "latitude": 37.798,
+    "longitude": -122.4046,
+    "filename": "031-the-mabuhay-gardens.png",
+    "nameSlots": [
+      "THE",
+      "MABUHAY",
+      "GARDENS"
+    ]
+  },
+  {
+    "name": "The Plough and Stars",
+    "addr": "116 Clement St",
+    "hood": "Inner Richmond",
+    "years": 51,
+    "cap": 60,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      12
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.783,
+    "longitude": -122.4617,
+    "filename": "032-the-plough-and-stars.png",
+    "nameSlots": [
+      "THE PLOUGH",
+      "AND STARS",
+      ""
+    ]
+  },
+  {
+    "name": "The Depot",
+    "addr": "1650 Holloway Ave",
+    "hood": "Lake Merced",
+    "years": 51,
+    "cap": 200,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      1,
+      8
+    ],
+    "artistType": "local",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7208,
+    "longitude": -122.4753,
+    "filename": "033-the-depot.png",
+    "nameSlots": [
+      "THE",
+      "DEPOT",
+      ""
+    ]
+  },
+  {
+    "name": "Hotel Utah Saloon",
+    "addr": "500 4th St",
+    "hood": "SoMa",
+    "years": 49,
+    "cap": 79,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      12,
+      3
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "For Sale / At Risk",
+    "pack": 0,
+    "latitude": 37.7796,
+    "longitude": -122.3979,
+    "filename": "034-hotel-utah-saloon.png",
+    "nameSlots": [
+      "HOTEL",
+      "UTAH",
+      "SALOON"
+    ]
+  },
+  {
+    "name": "El Rio",
+    "addr": "3158 Mission St",
+    "hood": "Mission",
+    "years": 48,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      9,
+      7,
+      1
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.7467,
+    "longitude": -122.4194,
+    "filename": "035-el-rio.png",
+    "nameSlots": [
+      "EL RIO",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "The Deluxe",
+    "addr": "1511 Haight St",
+    "hood": "Haight-Ashbury",
+    "years": 48,
+    "cap": 80,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      8,
+      10
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7699,
+    "longitude": -122.4488,
+    "filename": "036-the-deluxe.png",
+    "nameSlots": [
+      "THE",
+      "DELUXE",
+      ""
+    ]
+  },
+  {
+    "name": "Davies Symphony Hall",
+    "addr": "201 Van Ness Ave",
+    "hood": "Civic Center",
+    "years": 46,
+    "cap": 2700,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      6
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7778,
+    "longitude": -122.4205,
+    "filename": "037-davies-symphony-hall.png",
+    "nameSlots": [
+      "DAV",
+      "IES",
+      "SYMPHONY",
+      "HALL"
+    ]
+  },
+  {
+    "name": "SF Eagle",
+    "addr": "398 12th Street",
+    "hood": "SoMa",
+    "years": 45,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      1,
+      3,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.7701,
+    "longitude": -122.4131,
+    "filename": "038-sf-eagle.png",
+    "nameSlots": [
+      "SF EAGLE",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Noe Valley Ministry",
+    "addr": "1021 Sanchez St",
+    "hood": "Noe valley",
+    "years": 42,
+    "cap": 200,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      6,
+      8,
+      12
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7545,
+    "longitude": -122.4278,
+    "filename": "039-noe-valley-ministry.png",
+    "nameSlots": [
+      "NOE",
+      "VALLEY",
+      "MINISTRY"
+    ]
+  },
+  {
+    "name": "The Lab",
+    "addr": "2948 16th St",
+    "hood": "Mission",
+    "years": 42,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      5,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.765,
+    "longitude": -122.4129,
+    "filename": "040-the-lab.png",
+    "nameSlots": [
+      "THE",
+      "LAB",
+      ""
+    ]
+  },
+  {
+    "name": "DNA Lounge",
+    "addr": "375 Eleventh St",
+    "hood": "SoMa",
+    "years": 41,
+    "cap": 800,
+    "ticketPrice": 10,
+    "type": 1,
+    "genres": [
+      7,
+      1,
+      3
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7712,
+    "longitude": -122.4131,
+    "filename": "041-dna-lounge.png",
+    "nameSlots": [
+      "DNA",
+      "LOUNGE",
+      ""
+    ]
+  },
+  {
+    "name": "Pier 23 Cafe",
+    "addr": "Pier 23",
+    "hood": "Embarcadero",
+    "years": 41,
+    "cap": 300,
+    "ticketPrice": 0,
+    "type": 13,
+    "genres": [
+      10,
+      8,
+      1
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.8004,
+    "longitude": -122.4012,
+    "filename": "042-pier-23-cafe.png",
+    "nameSlots": [
+      "PIER",
+      "23",
+      "CAFE"
+    ]
+  },
+  {
+    "name": "BIX",
+    "addr": "56 Gold St",
+    "hood": "Financial District",
+    "years": 38,
+    "cap": 150,
+    "ticketPrice": 0,
+    "type": 13,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7968,
+    "longitude": -122.403,
+    "filename": "043-bix.png",
+    "nameSlots": [
+      "BIX",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "1015 Folsom",
+    "addr": "1015 Folsom St",
+    "hood": "SoMa",
+    "years": 37,
+    "cap": 1500,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      2,
+      0
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7774,
+    "longitude": -122.4054,
+    "filename": "044-1015-folsom.png",
+    "nameSlots": [
+      "1015",
+      "FOLSOM",
+      ""
+    ]
+  },
+  {
+    "name": "Adobe Books",
+    "addr": "3130 24th St",
+    "hood": "Mission",
+    "years": 37,
+    "cap": 50,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      5,
+      3
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7523,
+    "longitude": -122.4155,
+    "filename": "045-adobe-books.png",
+    "nameSlots": [
+      "ADOBE",
+      "BOOKS",
+      ""
+    ]
+  },
+  {
+    "name": "Blondie's Bar",
+    "addr": "540 Valencia St",
+    "hood": "Mission",
+    "years": 35,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      8,
+      9,
+      12
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7647,
+    "longitude": -122.4213,
+    "filename": "046-blondie-s-bar.png",
+    "nameSlots": [
+      "BLONDIE'S",
+      "BAR",
+      ""
+    ]
+  },
+  {
+    "name": "Bottom of the Hill",
+    "addr": "1233 17th St",
+    "hood": "Protrero Hill",
+    "years": 35,
+    "cap": 246,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      3,
+      12
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Saved",
+    "pack": 0,
+    "latitude": 37.7653,
+    "longitude": -122.3965,
+    "filename": "047-bottom-of-the-hill.png",
+    "nameSlots": [
+      "BOTTOM",
+      "OF THE",
+      "HILL"
+    ]
+  },
+  {
+    "name": "Kilowatt",
+    "addr": "3160 16th St",
+    "hood": "Mission",
+    "years": 32,
+    "cap": 300,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      3,
+      7
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Saved",
+    "pack": 0,
+    "latitude": 37.765,
+    "longitude": -122.422,
+    "filename": "048-kilowatt.png",
+    "nameSlots": [
+      "KILOWATT",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Biscuits and Blues",
+    "addr": "401 Mason St",
+    "hood": "Union Square",
+    "years": 31,
+    "cap": 200,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      10,
+      11
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7872,
+    "longitude": -122.4098,
+    "filename": "049-biscuits-and-blues.png",
+    "nameSlots": [
+      "BISCUITS",
+      "AND",
+      "BLUES"
+    ]
+  },
+  {
+    "name": "Boom Boom Room",
+    "addr": "1601 Fillmore St",
+    "hood": "Fillmore",
+    "years": 29,
+    "cap": 150,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      10,
+      11,
+      8
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7843,
+    "longitude": -122.4327,
+    "filename": "050-boom-boom-room.png",
+    "nameSlots": [
+      "BOOM",
+      "BOOM",
+      "ROOM"
+    ]
+  },
+  {
+    "name": "Make Out Room",
+    "addr": "3225 22nd St",
+    "hood": "Mission",
+    "years": 29,
+    "cap": 200,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      7,
+      9
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "For Sale / At Risk",
+    "pack": 0,
+    "latitude": 37.7552,
+    "longitude": -122.4194,
+    "filename": "051-make-out-room.png",
+    "nameSlots": [
+      "MAKE",
+      "OUT",
+      "ROOM"
+    ]
+  },
+  {
+    "name": "Amoeba Music",
+    "addr": "1855 Haight St",
+    "hood": "Haight-Ashbury",
+    "years": 29,
+    "cap": 200,
+    "ticketPrice": 0,
+    "type": 5,
+    "genres": [
+      1,
+      3,
+      2
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7696,
+    "longitude": -122.4533,
+    "filename": "052-amoeba-music.png",
+    "nameSlots": [
+      "AMOEBA",
+      "MUSIC",
+      ""
+    ]
+  },
+  {
+    "name": "Roccapulco",
+    "addr": "3140 Mission St",
+    "hood": "Mission",
+    "years": 28,
+    "cap": 500,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      9
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.747,
+    "longitude": -122.4196,
+    "filename": "053-roccapulco.png",
+    "nameSlots": [
+      "ROCCAPULCO",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Bird & Beckett Books & Records",
+    "addr": "653 Chenery St",
+    "hood": "Glen Park",
+    "years": 27,
+    "cap": 40,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      8,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7342,
+    "longitude": -122.4329,
+    "filename": "054-bird-beckett-books-records.png",
+    "nameSlots": [
+      "BIRD & BECKETT",
+      "BOOKS &",
+      "RECORDS"
+    ]
+  },
+  {
+    "name": "Oracle Park",
+    "addr": "24 Willie Mays Plaza",
+    "hood": "SOMA",
+    "years": 26,
+    "cap": 40260,
+    "ticketPrice": 124.5,
+    "type": 4,
+    "genres": [
+      0,
+      1,
+      2
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7786,
+    "longitude": -122.3893,
+    "filename": "055-oracle-park.png",
+    "nameSlots": [
+      "ORACLE",
+      "PARK"
+    ]
+  },
+  {
+    "name": "Yerba Buena Gardens Festival",
+    "addr": "Yerba Buena Gardens",
+    "hood": "SOMA",
+    "years": 26,
+    "cap": 1000,
+    "ticketPrice": 0,
+    "type": 6,
+    "genres": [
+      8,
+      9,
+      11
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7845,
+    "longitude": -122.4023,
+    "filename": "056-yerba-buena-gardens-festival.png",
+    "nameSlots": [
+      "YERBA BUENA",
+      "GARDENS",
+      "FESTIVAL"
+    ]
+  },
+  {
+    "name": "Hardly Strictly Bluegrass",
+    "addr": "Golden Gate Park",
+    "hood": "Golden Gate Park",
+    "years": 25,
+    "cap": 250000,
+    "ticketPrice": 0,
+    "type": 6,
+    "genres": [
+      12,
+      1,
+      10
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7696,
+    "longitude": -122.489,
+    "filename": "057-hardly-strictly-bluegrass.png",
+    "nameSlots": [
+      "HARDLY",
+      "STRICTLY",
+      "BLUEGRASS"
+    ]
+  },
+  {
+    "name": "The Riptide",
+    "addr": "3639 Taraval St",
+    "hood": "Outer Sunset",
+    "years": 24,
+    "cap": 50,
+    "ticketPrice": 0,
+    "type": 3,
+    "genres": [
+      1,
+      12,
+      3
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.743,
+    "longitude": -122.5,
+    "filename": "058-the-riptide.png",
+    "nameSlots": [
+      "THE RIPTIDE",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "The Regency Ballroom",
+    "addr": "1300 Van Ness Ave",
+    "hood": "Nob Hill",
+    "years": 24,
+    "cap": 1450,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      1,
+      0,
+      7
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7881,
+    "longitude": -122.4226,
+    "filename": "059-the-regency-ballroom.png",
+    "nameSlots": [
+      "THE",
+      "REGENCY",
+      "BALL",
+      "ROOM"
+    ]
+  },
+  {
+    "name": "Bender's Bar and Grill",
+    "addr": "806 S. Van Ness Ave",
+    "hood": "Mission",
+    "years": 23,
+    "cap": 200,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      1,
+      3
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7588,
+    "longitude": -122.417,
+    "filename": "060-bender-s-bar-and-grill.png",
+    "nameSlots": [
+      "BENDER'S",
+      "BAR AND",
+      "GRILL"
+    ]
+  },
+  {
+    "name": "Rickshaw Stop",
+    "addr": "155 Fell St",
+    "hood": "Hayes Valley",
+    "years": 23,
+    "cap": 350,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      0,
+      7,
+      1
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7767,
+    "longitude": -122.4228,
+    "filename": "061-rickshaw-stop.png",
+    "nameSlots": [
+      "RICK",
+      "SHAW",
+      "STOP"
+    ]
+  },
+  {
+    "name": "Red Poppy Art House",
+    "addr": "2698 Folsom St",
+    "hood": "Mission",
+    "years": 23,
+    "cap": 49,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      5,
+      8,
+      9
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7518,
+    "longitude": -122.414,
+    "filename": "062-red-poppy-art-house.png",
+    "nameSlots": [
+      "RED POPPY",
+      "ART",
+      "HOUSE"
+    ]
+  },
+  {
+    "name": "Swig Bar",
+    "addr": "561 Geary St",
+    "hood": "Union Square",
+    "years": 22,
+    "cap": 110,
+    "ticketPrice": 0,
+    "type": 3,
+    "genres": [
+      10,
+      7,
+      2
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7867,
+    "longitude": -122.4132,
+    "filename": "063-swig-bar.png",
+    "nameSlots": [
+      "SWIG",
+      "BAR",
+      ""
+    ]
+  },
+  {
+    "name": "The Independent",
+    "addr": "628 Divisadero St",
+    "hood": "NOPA",
+    "years": 22,
+    "cap": 500,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      0,
+      7
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7756,
+    "longitude": -122.4376,
+    "filename": "064-the-independent.png",
+    "nameSlots": [
+      "THE",
+      "INDEPENDENT",
+      ""
+    ]
+  },
+  {
+    "name": "Underground SF",
+    "addr": "424 Haight St",
+    "hood": "Lower Haight",
+    "years": 22,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 1,
+    "genres": [
+      7
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7722,
+    "longitude": -122.4292,
+    "filename": "065-underground-sf.png",
+    "nameSlots": [
+      "UNDER",
+      "GROUND",
+      "SF"
+    ]
+  },
+  {
+    "name": "The Knockout",
+    "addr": "3223 Mission St",
+    "hood": "Mission",
+    "years": 21,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      3,
+      1,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.7459,
+    "longitude": -122.42,
+    "filename": "066-the-knockout.png",
+    "nameSlots": [
+      "THE KNOCKOUT",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Sheba Piano Lounge",
+    "addr": "1419 Fillmore St,",
+    "hood": "Fillmore",
+    "years": 20,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 13,
+    "genres": [
+      8,
+      11
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7826,
+    "longitude": -122.4325,
+    "filename": "067-sheba-piano-lounge.png",
+    "nameSlots": [
+      "SHEBA",
+      "PIANO",
+      "LOUNGE"
+    ]
+  },
+  {
+    "name": "Temple Nightclub",
+    "addr": "540 Howard St",
+    "hood": "SoMa",
+    "years": 19,
+    "cap": 1000,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      2,
+      0
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7875,
+    "longitude": -122.3961,
+    "filename": "068-temple-nightclub.png",
+    "nameSlots": [
+      "TEMPLE",
+      "NIGHT",
+      "CLUB"
+    ]
+  },
+  {
+    "name": "Thrillhouse Records",
+    "addr": "3422 Mission St",
+    "hood": "Mission",
+    "years": 19,
+    "cap": 30,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      3,
+      1,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.744,
+    "longitude": -122.4217,
+    "filename": "069-thrillhouse-records.png",
+    "nameSlots": [
+      "THRIL",
+      "LHOUSE",
+      "RECORDS"
+    ]
+  },
+  {
+    "name": "Madrone Art Bar",
+    "addr": "500 Divisadero St",
+    "hood": "NOPA",
+    "years": 18,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      11,
+      7,
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7738,
+    "longitude": -122.4376,
+    "filename": "070-madrone-art-bar.png",
+    "nameSlots": [
+      "MADRONE",
+      "ART",
+      "BAR"
+    ]
+  },
+  {
+    "name": "Outside Lands Festival",
+    "addr": "Golden Gate Park",
+    "hood": "Golden Gate Park",
+    "years": 18,
+    "cap": 75000,
+    "ticketPrice": 250.0,
+    "type": 6,
+    "genres": [
+      0,
+      1,
+      7
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.769,
+    "longitude": -122.493,
+    "filename": "071-outside-lands-festival.png",
+    "nameSlots": [
+      "OUTSIDE",
+      "LANDS",
+      "FESTIVAL"
+    ]
+  },
+  {
+    "name": "Mercury Cafe",
+    "addr": "201 Octavia St",
+    "hood": "Hayes Valley",
+    "years": 17,
+    "cap": 30,
+    "ticketPrice": 0,
+    "type": 13,
+    "genres": [
+      8,
+      12,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7745,
+    "longitude": -122.4237,
+    "filename": "072-mercury-cafe.png",
+    "nameSlots": [
+      "MERCURY",
+      "CAFE",
+      ""
+    ]
+  },
+  {
+    "name": "Comstock Saloon",
+    "addr": "155 Columbus Ave",
+    "hood": "Chinatown",
+    "years": 16,
+    "cap": 100,
+    "ticketPrice": 0,
+    "type": 3,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7969,
+    "longitude": -122.4047,
+    "filename": "073-comstock-saloon.png",
+    "nameSlots": [
+      "COMSTOCK",
+      "SALOON",
+      ""
+    ]
+  },
+  {
+    "name": "Royal Cuckoo Organ Lounge",
+    "addr": "3202 Mission St",
+    "hood": "Mission",
+    "years": 16,
+    "cap": 49,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      8,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7462,
+    "longitude": -122.4198,
+    "filename": "074-royal-cuckoo-organ-lounge.png",
+    "nameSlots": [
+      "ROYAL CUCKOO",
+      "ORGAN",
+      "LOUNGE"
+    ]
+  },
+  {
+    "name": "Public Works",
+    "addr": "161 Erie St",
+    "hood": "Mission",
+    "years": 16,
+    "cap": 500,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      2
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7694,
+    "longitude": -122.4195,
+    "filename": "075-public-works.png",
+    "nameSlots": [
+      "PUBLIC",
+      "WORKS",
+      ""
+    ]
+  },
+  {
+    "name": "The Lucky Horseshoe",
+    "addr": "453 Cortland Ave",
+    "hood": "Bernal Heights",
+    "years": 15,
+    "cap": 49,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      10,
+      1,
+      12
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.739,
+    "longitude": -122.417,
+    "filename": "076-the-lucky-horseshoe.png",
+    "nameSlots": [
+      "THE LUCKY",
+      "HORSESHOE",
+      ""
+    ]
+  },
+  {
+    "name": "Brick and Mortar",
+    "addr": "1710 Mission St",
+    "hood": "Mission",
+    "years": 15,
+    "cap": 250,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      2,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7704,
+    "longitude": -122.4196,
+    "filename": "077-brick-and-mortar.png",
+    "nameSlots": [
+      "BRICK",
+      "AND",
+      "MORTAR"
+    ]
+  },
+  {
+    "name": "Tupelo",
+    "addr": "1337 Grant Ave",
+    "hood": "North Beach",
+    "years": 15,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      11,
+      10,
+      1
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7988,
+    "longitude": -122.4075,
+    "filename": "078-tupelo.png",
+    "nameSlots": [
+      "TUPELO",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Local Edition",
+    "addr": "691 Market St,",
+    "hood": "SoMa",
+    "years": 14,
+    "cap": 250,
+    "ticketPrice": 0,
+    "type": 3,
+    "genres": [
+      8,
+      0
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7875,
+    "longitude": -122.4019,
+    "filename": "079-local-edition.png",
+    "nameSlots": [
+      "LOCAL",
+      "EDITION",
+      ""
+    ]
+  },
+  {
+    "name": "The Chapel",
+    "addr": "777 Valencia St",
+    "hood": "Mission",
+    "years": 14,
+    "cap": 500,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      1,
+      12,
+      3
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7607,
+    "longitude": -122.421,
+    "filename": "080-the-chapel.png",
+    "nameSlots": [
+      "THE",
+      "CHAPEL",
+      ""
+    ]
+  },
+  {
+    "name": "The Royale",
+    "addr": "800 Post St",
+    "hood": "Nob Hill",
+    "years": 14,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      0
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7878,
+    "longitude": -122.4166,
+    "filename": "081-the-royale.png",
+    "nameSlots": [
+      "THE",
+      "ROYALE",
+      ""
+    ]
+  },
+  {
+    "name": "Center for New Music",
+    "addr": "55 Taylor St",
+    "hood": "Tenderloin",
+    "years": 14,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      5,
+      6,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 3,
+    "latitude": 37.7829,
+    "longitude": -122.4115,
+    "filename": "082-center-for-new-music.png",
+    "nameSlots": [
+      "CENTER",
+      "FOR NEW",
+      "MUSIC"
+    ]
+  },
+  {
+    "name": "Feinstein's at the Nikko",
+    "addr": "222 Mason St",
+    "hood": "Union Square",
+    "years": 13,
+    "cap": 140,
+    "ticketPrice": 34.5,
+    "type": 2,
+    "genres": [
+      8,
+      0
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7858,
+    "longitude": -122.4095,
+    "filename": "083-feinstein-s-at-the-nikko.png",
+    "nameSlots": [
+      "FEIN",
+      "STEIN'S",
+      "AT THE",
+      "NIKKO"
+    ]
+  },
+  {
+    "name": "SF Jazz Center",
+    "addr": "201 Franklin St",
+    "hood": "Hayes Valley",
+    "years": 13,
+    "cap": 700,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      8,
+      9,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7771,
+    "longitude": -122.4217,
+    "filename": "084-sf-jazz-center.png",
+    "nameSlots": [
+      "SF",
+      "JAZZ",
+      "CENTER",
+      ""
+    ]
+  },
+  {
+    "name": "Neck of the Woods",
+    "addr": "406 Clement St",
+    "hood": "Richmond",
+    "years": 13,
+    "cap": 500,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      3
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7824,
+    "longitude": -122.464,
+    "filename": "085-neck-of-the-woods.png",
+    "nameSlots": [
+      "NECK",
+      "OF THE",
+      "WOODS"
+    ]
+  },
+  {
+    "name": "Gray Area",
+    "addr": "2665 Mission St",
+    "hood": "Mission",
+    "years": 12,
+    "cap": 800,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      7,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7547,
+    "longitude": -122.4188,
+    "filename": "086-gray-area.png",
+    "nameSlots": [
+      "GRAY",
+      "AREA",
+      ""
+    ]
+  },
+  {
+    "name": "Mr. Tipple's Jazz club",
+    "addr": "39 Fell St",
+    "hood": "Civic Center",
+    "years": 11,
+    "cap": 100,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7766,
+    "longitude": -122.42,
+    "filename": "087-mr-tipple-s-jazz-club.png",
+    "nameSlots": [
+      "MR. TIPPLE'S",
+      "JAZZ",
+      "CLUB"
+    ]
+  },
+  {
+    "name": "Oasis",
+    "addr": "298 11th St",
+    "hood": "SoMa",
+    "years": 11,
+    "cap": 600,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      0
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Saved",
+    "pack": 0,
+    "latitude": 37.7714,
+    "longitude": -122.414,
+    "filename": "088-oasis.png",
+    "nameSlots": [
+      "OASIS",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "The Midway",
+    "addr": "900 Marin St",
+    "hood": "Dogpatch",
+    "years": 11,
+    "cap": 2500,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      2,
+      1
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.75,
+    "longitude": -122.3875,
+    "filename": "089-the-midway.png",
+    "nameSlots": [
+      "THE",
+      "MIDWAY",
+      ""
+    ]
+  },
+  {
+    "name": "NOISE",
+    "addr": "3427 Balboa St",
+    "hood": "Richmond",
+    "years": 11,
+    "cap": 30,
+    "ticketPrice": 0,
+    "type": 5,
+    "genres": [
+      5,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7753,
+    "longitude": -122.4967,
+    "filename": "090-noise.png",
+    "nameSlots": [
+      "NOISE",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Black Cat",
+    "addr": "400 Eddy St",
+    "hood": "Tenderloin",
+    "years": 10,
+    "cap": 110,
+    "ticketPrice": 34.5,
+    "type": 3,
+    "genres": [
+      8,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7835,
+    "longitude": -122.4157,
+    "filename": "091-black-cat.png",
+    "nameSlots": [
+      "BLACK",
+      "CAT",
+      ""
+    ]
+  },
+  {
+    "name": "Ocean Ale House",
+    "addr": "1314 Ocean Ave",
+    "hood": "Ingleside",
+    "years": 10,
+    "cap": 100,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      1,
+      12
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7238,
+    "longitude": -122.4586,
+    "filename": "092-ocean-ale-house.png",
+    "nameSlots": [
+      "OCEAN",
+      "ALE",
+      "HOUSE"
+    ]
+  },
+  {
+    "name": "The Great Northern",
+    "addr": "119 Utah St.",
+    "hood": "SoMa",
+    "years": 10,
+    "cap": 700,
+    "ticketPrice": 34.5,
+    "type": 1,
+    "genres": [
+      7,
+      2,
+      0
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7683,
+    "longitude": -122.4067,
+    "filename": "093-the-great-northern.png",
+    "nameSlots": [
+      "THE",
+      "GREAT",
+      "NORTHERN"
+    ]
+  },
+  {
+    "name": "Clarion Performing Arts Center",
+    "addr": "2 Waverly Pl",
+    "hood": "Chinatown",
+    "years": 10,
+    "cap": 60,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      8,
+      6
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7936,
+    "longitude": -122.4075,
+    "filename": "094-clarion-performing-arts-center.png",
+    "nameSlots": [
+      "CLARION",
+      "PERFORMING",
+      "ARTS CENTER"
+    ]
+  },
+  {
+    "name": "August Hall",
+    "addr": "420 Mason St",
+    "hood": "Union Square",
+    "years": 8,
+    "cap": 1000,
+    "ticketPrice": 74.5,
+    "type": 2,
+    "genres": [
+      0,
+      1,
+      7
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 1,
+    "latitude": 37.7877,
+    "longitude": -122.4096,
+    "filename": "095-august-hall.png",
+    "nameSlots": [
+      "AUGUST",
+      "HALL",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Chase Center",
+    "addr": "1 Warriors Wy",
+    "hood": "Mission Bay",
+    "years": 7,
+    "cap": 18000,
+    "ticketPrice": 124.5,
+    "type": 4,
+    "genres": [
+      0,
+      2,
+      1
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.768,
+    "longitude": -122.3877,
+    "filename": "096-chase-center.png",
+    "nameSlots": [
+      "CHASE",
+      "CENTER"
+    ]
+  },
+  {
+    "name": "The New Farm",
+    "addr": "10 Cargo Way",
+    "hood": "Bayview",
+    "years": 7,
+    "cap": 500,
+    "ticketPrice": 10,
+    "type": 6,
+    "genres": [
+      1,
+      12,
+      3
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7388,
+    "longitude": -122.379,
+    "filename": "097-the-new-farm.png",
+    "nameSlots": [
+      "THE",
+      "NEW",
+      "FARM"
+    ]
+  },
+  {
+    "name": "Lion’s Den Bar and Lounge",
+    "addr": "57 Wentworth Place",
+    "hood": "Chinatown",
+    "years": 5,
+    "cap": 120,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      8,
+      10,
+      11
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7955,
+    "longitude": -122.4059,
+    "filename": "098-lion-s-den-bar-and-lounge.png",
+    "nameSlots": [
+      "LION’S DEN",
+      "BAR AND",
+      "LOUNGE"
+    ]
+  },
+  {
+    "name": "Blue Heron Boathouse",
+    "addr": "50 Blue Heron Lake Dr",
+    "hood": "Golden Gate Park",
+    "years": 5,
+    "cap": 100,
+    "ticketPrice": 0,
+    "type": 6,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7703,
+    "longitude": -122.4749,
+    "filename": "099-blue-heron-boathouse.png",
+    "nameSlots": [
+      "BLUE",
+      "HERON",
+      "BOATHOUSE"
+    ]
+  },
+  {
+    "name": "The Mellow",
+    "addr": "1401 Haight St",
+    "hood": "Haight-Ashbury",
+    "years": 5,
+    "cap": 80,
+    "ticketPrice": 10,
+    "type": 5,
+    "genres": [
+      7,
+      2,
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7704,
+    "longitude": -122.4445,
+    "filename": "100-the-mellow.png",
+    "nameSlots": [
+      "THE",
+      "MELLOW",
+      ""
+    ]
+  },
+  {
+    "name": "Arcana",
+    "addr": "2512 Mission St",
+    "hood": "Mission",
+    "years": 4,
+    "cap": 80,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      8,
+      11,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7562,
+    "longitude": -122.4186,
+    "filename": "101-arcana.png",
+    "nameSlots": [
+      "ARCANA",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Keys Jazz Bistro",
+    "addr": "498 Broadway",
+    "hood": "North Beach",
+    "years": 4,
+    "cap": 150,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      8
+    ],
+    "artistType": "touring",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.798,
+    "longitude": -122.4052,
+    "filename": "102-keys-jazz-bistro.png",
+    "nameSlots": [
+      "KEYS",
+      "JAZZ",
+      "BISTRO"
+    ]
+  },
+  {
+    "name": "Portola Music Festival",
+    "addr": "Pier 80",
+    "hood": "Bayview",
+    "years": 4,
+    "cap": 40000,
+    "ticketPrice": 250.0,
+    "type": 6,
+    "genres": [
+      7,
+      2,
+      0
+    ],
+    "artistType": "touring",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.748,
+    "longitude": -122.3785,
+    "filename": "103-portola-music-festival.png",
+    "nameSlots": [
+      "PORTOLA",
+      "MUSIC",
+      "FESTIVAL"
+    ]
+  },
+  {
+    "name": "The Lost Church",
+    "addr": "988 Columbus Ave",
+    "hood": "North Beach",
+    "years": 4,
+    "cap": 99,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      12,
+      1,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.8043,
+    "longitude": -122.4167,
+    "filename": "104-the-lost-church.png",
+    "nameSlots": [
+      "THE",
+      "LOST",
+      "CHURCH"
+    ]
+  },
+  {
+    "name": "The Faight",
+    "addr": "473A Haight St",
+    "hood": "Lower Haight",
+    "years": 3,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 3,
+    "genres": [
+      1,
+      3,
+      7
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 2,
+    "latitude": 37.7722,
+    "longitude": -122.4303,
+    "filename": "105-the-faight.png",
+    "nameSlots": [
+      "THE FAIGHT",
+      "",
+      ""
+    ]
+  },
+  {
+    "name": "Music City Starfactory",
+    "addr": "1355 Bush",
+    "hood": "Nob Hill",
+    "years": 2,
+    "cap": 150,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      1,
+      0,
+      3
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "For Sale / At Risk",
+    "pack": 0,
+    "latitude": 37.7893,
+    "longitude": -122.4204,
+    "filename": "106-music-city-starfactory.png",
+    "nameSlots": [
+      "MUSIC CITY",
+      "STAR",
+      "FACTORY"
+    ]
+  },
+  {
+    "name": "Stookey's Blue Room",
+    "addr": "891 Bush St",
+    "hood": "Nob Hill",
+    "years": 2,
+    "cap": 30,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      8
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7898,
+    "longitude": -122.4125,
+    "filename": "107-stookey-s-blue-room.png",
+    "nameSlots": [
+      "STOOKEY'S",
+      "BLUE",
+      "ROOM"
+    ]
+  },
+  {
+    "name": "Club Darc",
+    "addr": "Pier 48 (Shed A)",
+    "hood": "Mission Bay",
+    "years": 1,
+    "cap": 5800,
+    "ticketPrice": 34.5,
+    "type": 0,
+    "genres": [
+      7,
+      5
+    ],
+    "artistType": "mixed",
+    "independent": false,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7708,
+    "longitude": -122.3877,
+    "filename": "108-club-darc.png",
+    "nameSlots": [
+      "CLUB",
+      "DARC",
+      ""
+    ]
+  },
+  {
+    "name": "Sunset Village Music Hall",
+    "addr": "4114 Judah St",
+    "hood": "Sunset",
+    "years": 1,
+    "cap": 70,
+    "ticketPrice": 10,
+    "type": 0,
+    "genres": [
+      12,
+      1,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7603,
+    "longitude": -122.5041,
+    "filename": "109-sunset-village-music-hall.png",
+    "nameSlots": [
+      "SUNSET",
+      "VILLAGE",
+      "MUSIC HALL"
+    ]
+  },
+  {
+    "name": "Atelier Kromatica",
+    "addr": "182 Shipley St",
+    "hood": "SoMa",
+    "years": 1,
+    "cap": 40,
+    "ticketPrice": 34.5,
+    "type": 5,
+    "genres": [
+      6,
+      5
+    ],
+    "artistType": "local",
+    "independent": true,
+    "venueStatus": "Open!",
+    "pack": 0,
+    "latitude": 37.7788,
+    "longitude": -122.4033,
+    "filename": "110-atelier-kromatica.png",
+    "nameSlots": [
+      "ATELIER",
+      "KROMATICA",
+      ""
+    ]
+  }
+]
